@@ -1,0 +1,492 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Viluxent</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Viluxent — 9.0 TMUA holder writing community mock papers, guides and walkthroughs.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Doto:wght@400;600;800;900&family=Anton&family=Noto+Serif:ital,wght@0,400;0,700;1,400;1,700&family=Noto+Sans+Math&display=swap" rel="stylesheet">
+<style>
+/* Layout: one fixed CRT tube; scrolling moves a camera through five pieces of mathematics.
+   Proportions follow φ: key lines sit at 38.2% / 61.8%, screens are φ:1, and type steps by √φ. */
+:root{
+  color-scheme:dark;
+  --phi:1.6180339887;
+  --ink:#050505; --phos:#e6f2f3; --dim:#8b9799; --live:#3cff7a; --studio:#141616; --gold:#e8b64c;
+  --dot:"Doto",ui-monospace,Menlo,Consolas,monospace; --poster:"Anton",Impact,"Arial Narrow",sans-serif;
+  --math:"Noto Serif","Noto Sans Math","Cambria Math","Times New Roman",serif;
+  --t0:11px; --t1:14px; --t2:17.8px; --t3:22.6px; --t4:28.8px; --t5:46.6px; /* 11 × √φ^k */
+  --gx:max(16px,3vw);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden;background:var(--ink);color:var(--phos);font-family:var(--dot);-webkit-font-smoothing:antialiased;overscroll-behavior:none}
+a{color:inherit;text-decoration:none}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+:focus-visible{outline:1px dashed currentColor;outline-offset:4px}
+#stage{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.m{font-family:var(--math);font-weight:400;letter-spacing:0}
+.qed{display:inline-block;width:.56em;height:.56em;background:currentColor;margin-left:.22em;vertical-align:.04em}
+
+/* CRT glass */
+.glass{position:fixed;inset:0;pointer-events:none;z-index:30}
+.glass.scan{background:repeating-linear-gradient(to bottom,rgba(0,0,0,.16) 0 1px,transparent 1px 3px);mix-blend-mode:multiply}
+.glass.tube{background:radial-gradient(ellipse 120% 130% at 50% 50%,transparent 60%,rgba(0,0,0,.5) 86%,#000 100%)}
+#grain{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:31;opacity:.06;mix-blend-mode:screen}
+
+/* overlays */
+.ui{position:fixed;z-index:20;pointer-events:none;opacity:0;visibility:hidden}
+.ui a,.ui button,.ui li{pointer-events:auto}
+.sh{text-shadow:0 0 5px rgba(230,242,243,.35),-.6px 0 rgba(255,60,90,.35),.6px 0 rgba(60,200,255,.35)}
+header{position:fixed;top:0;left:0;right:0;z-index:25;display:flex;justify-content:space-between;align-items:center;padding:calc(22px + env(safe-area-inset-top,0px)) calc(var(--gx) + 1px) 0;font-size:var(--t1);color:#fff;mix-blend-mode:difference}
+.brand{font-weight:900;font-size:var(--t2);letter-spacing:.01em}
+.hnav{display:flex;gap:34px;align-items:center;font-weight:600;letter-spacing:.12em}
+.dotg{display:inline-block;width:3px;height:3px;background:var(--live);margin-left:5px;vertical-align:middle}
+.burger{display:inline-block;width:9px;height:8px;margin-left:3px;vertical-align:-1px;border-top:1px solid;border-bottom:1px solid;position:relative}
+.burger:after{content:"";position:absolute;left:0;right:0;top:2.5px;border-top:1px solid}
+
+#heroL{left:calc(var(--gx) + 1px);top:61.8%;transform:translateY(-50%)}
+#heroL h1{font-weight:900;font-size:var(--t5);line-height:1;letter-spacing:.01em}
+#heroL .meta{display:flex;gap:40px;margin-top:4px;font-size:var(--t1);font-weight:600;color:var(--dim);letter-spacing:.06em}
+#heroR{right:calc(var(--gx) + 1px);top:38.2%;width:282px;transform:translateY(-50%);font-size:var(--t1);font-weight:600;line-height:1.3;text-transform:uppercase;letter-spacing:.05em}
+#heroR b{display:block;font-weight:900;font-size:var(--t4);line-height:1;margin-bottom:8px;letter-spacing:0}
+#heroCap{left:50%;bottom:calc(58px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);font-size:var(--t0);font-weight:600;letter-spacing:.14em;color:var(--dim);text-transform:uppercase;white-space:nowrap}
+
+#work{left:calc(var(--gx) + 1px);top:61.8%;transform:translateY(-50%);color:var(--studio)}
+#work h2{font-weight:900;font-size:var(--t4);line-height:1;margin-bottom:8px}
+#work ol{list-style:none;font-size:12px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:#5d6464;line-height:1.5}
+#work li{cursor:pointer}
+#work li small{display:block;font-size:var(--t0);color:#7b8383;letter-spacing:.08em;margin:-1px 0 3px 14px}
+#work li.on{color:var(--studio)}
+#work li.on:before{content:"• "}
+
+.panel{max-width:min(470px,84vw);padding:14px 18px 14px 34px;color:var(--phos);text-transform:uppercase;letter-spacing:.05em;font-weight:600;background:rgba(5,7,9,.62);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);border-radius:4px}
+.rail{position:absolute;left:14px;top:18px;bottom:18px;border-left:1px dashed var(--phos)}
+.rail:before,.rail:after{content:"";position:absolute;left:-4px;border:3.5px solid transparent}
+.rail:before{top:-4px;border-bottom-color:var(--phos);border-top:0}
+.rail:after{bottom:-4px;border-top-color:var(--phos);border-bottom:0}
+.panel h2{font-size:var(--t1);font-weight:600;margin-bottom:14px}
+.panel p{font-size:var(--t1);line-height:1.4;margin-bottom:12px}
+.panel .more{font-size:var(--t1)}
+#about,#who{left:calc(var(--gx) + 1px);top:61.8%;transform:translateY(-50%)}
+
+#outro{left:calc(var(--gx) + 1px);right:calc(var(--gx) + 1px);bottom:calc(20px + env(safe-area-inset-bottom,0px));padding:16px 18px;background:rgba(3,6,12,.62);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);border-radius:4px;display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:16px 40px;color:#fff;text-transform:uppercase;letter-spacing:.08em;font-weight:600}
+#outro .cta{font-weight:900;font-size:clamp(28.8px,3.4vw,46.6px);line-height:1;letter-spacing:.01em}
+#outro .stat{font-size:12px;margin-top:10px}
+#outro .id{font-size:12px;margin-top:8px;display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center}
+#outro .id code{font-family:var(--dot);user-select:all}
+#outro .id button{border:1px solid rgba(255,255,255,.5);padding:2px 10px;border-radius:99px;font-size:var(--t0);letter-spacing:.1em}
+#outro .credit{font-size:var(--t0);opacity:.85;text-align:right;line-height:1.5}
+#outro .credit a{border-bottom:1px solid rgba(255,255,255,.5)}
+
+#hint{left:50%;bottom:calc(22px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);font-size:var(--t0);font-weight:600;letter-spacing:.3em;color:var(--dim)}
+#toast{position:fixed;left:50%;top:calc(70px + env(safe-area-inset-top,0px));transform:translate(-50%,-8px);z-index:45;background:rgba(5,6,8,.9);border:1px solid rgba(230,242,243,.4);padding:10px 16px;font-size:var(--t1);font-weight:600;letter-spacing:.06em;opacity:0;transition:opacity .4s,transform .4s;pointer-events:none;max-width:calc(100vw - 32px);text-align:center}
+#toast.on{opacity:1;transform:translate(-50%,0)}
+
+/* loader: the Basel series converging */
+#loader{position:fixed;inset:0;background:#000;z-index:60;display:grid;place-items:center;cursor:pointer;transition:opacity .6s,visibility .6s}
+#loader.done{opacity:0;visibility:hidden}
+.ld{display:grid;justify-items:center;gap:10px;font-weight:900;font-size:var(--t4)}
+.bar{width:162px;height:16px;border:1.5px solid var(--phos);border-radius:99px;position:relative}
+.bar i{position:absolute;top:2px;left:2px;width:10px;height:10px;border-radius:50%;background:var(--phos);box-shadow:0 0 8px var(--phos)}
+.ld .sum{font-size:var(--t1);font-weight:600;color:var(--dim);letter-spacing:.06em;font-variant-numeric:tabular-nums;white-space:nowrap}
+.ld .sum .m{color:var(--phos)}
+
+/* menu: numbered by Fibonacci */
+#menu{position:fixed;inset:0;z-index:50;background:rgba(5,5,5,.96);display:flex;flex-direction:column;justify-content:center;gap:4px;padding:0 var(--gx);clip-path:inset(0 0 100% 0);transition:clip-path .55s cubic-bezier(.7,0,.2,1),visibility 0s linear .55s;visibility:hidden}
+#menu.open{clip-path:inset(0);visibility:visible;transition-delay:0s}
+#menu button.it{display:flex;gap:22px;align-items:baseline;text-align:left;font-weight:900;font-size:clamp(36.6px,7.5vw,75.4px);line-height:1.04;text-transform:uppercase;color:var(--dim);transition:color .2s,transform .3s}
+#menu button.it span{font-size:var(--t1);font-weight:600;letter-spacing:.1em;min-width:3.2em}
+#menu button.it:hover,#menu button.it:focus-visible{color:var(--phos);transform:translateX(10px)}
+#menu .x{position:absolute;top:calc(22px + env(safe-area-inset-top,0px));right:var(--gx);font-size:var(--t1);font-weight:600;letter-spacing:.12em;color:var(--phos)}
+#menu .credit{position:absolute;left:var(--gx);right:var(--gx);bottom:calc(24px + env(safe-area-inset-bottom,0px));font-size:var(--t0);letter-spacing:.1em;color:var(--dim);text-transform:uppercase;line-height:1.6}
+#menu .credit a{border-bottom:1px solid currentColor}
+
+@media (max-width:760px){
+  header{font-size:12px} .brand{font-size:var(--t1)} .hnav{gap:16px}
+  #heroL{top:auto;bottom:calc(64px + env(safe-area-inset-bottom,0px));transform:none}
+  #heroL h1{font-size:var(--t4)}
+  #heroR{left:calc(var(--gx) + 1px);right:auto;width:auto;max-width:calc(100vw - 2*var(--gx));top:calc(68px + env(safe-area-inset-top,0px));transform:none;font-size:12px}
+  #heroR b{font-size:var(--t3)}
+  #heroCap{left:calc(var(--gx) + 1px);right:calc(var(--gx) + 1px);transform:none;white-space:normal;bottom:calc(26px + env(safe-area-inset-bottom,0px))}
+  #work{top:auto;bottom:calc(32px + env(safe-area-inset-bottom,0px));transform:none;background:rgba(236,238,238,.88);padding:10px 12px;border-radius:4px;left:calc(var(--gx) - 11px)}
+  #work h2{font-size:var(--t3)}
+  #work li small{display:none}
+  #about,#who{top:auto;bottom:calc(40px + env(safe-area-inset-bottom,0px));transform:none;right:calc(var(--gx) + 1px)}
+  .panel p{font-size:12px}
+  #outro{flex-direction:column;align-items:flex-start}
+  #outro .credit{text-align:left}
+  #hint{display:none}
+}
+@media (prefers-reduced-motion:reduce){#menu,#loader,#toast{transition:none}}
+</style>
+</head>
+<body>
+<canvas id="stage" aria-hidden="true"></canvas>
+
+<div id="loader" role="status" aria-label="Loading">
+  <div class="ld"><span class="sh">LOADING</span><div class="bar"><i id="barDot"></i></div>
+    <div class="sum"><span class="m">Σ</span><sub>k≤<span id="ldN">1</span></sub> <span class="m">1/k²</span> = <span id="ldS">1.000000</span> <span class="m">→ π²/6</span></div></div>
+</div>
+
+<header>
+  <button class="brand sh" data-go="0" aria-label="Viluxent, back to start">VILUXENT<span class="qed" aria-hidden="true"></span></button>
+  <nav class="hnav">
+    <button data-go="23">LET’S TALK<span class="dotg"></span></button>
+    <button id="menuBtn" aria-expanded="false" aria-controls="menu">MENU<span class="burger"></span></button>
+  </nav>
+</header>
+
+<div class="ui" id="heroL"><h1 class="sh">VILUXENT</h1><div class="meta"><span>// TMUA 9.0</span><span><span class="m">φ</span> = 1.6180…</span></div></div>
+<p class="ui sh" id="heroR"><b>9.0 / 9.0</b>TMUA holder. I write the mocks I wish I’d had, and 14 students have now taken them to a 9.0.</p>
+<div class="ui" id="heroCap">Vogel’s sunflower · <span id="seedN">1600</span> seeds · golden angle 137.5077°</div>
+<div class="ui" id="work"><h2>THE PAPERS</h2><ol id="workList"></ol></div>
+<div class="ui sh panel" id="about"><span class="rail"></span><h2>ABOUT ME</h2>
+  <p>I scored 9.0 on the TMUA. Then I started writing the papers I wished I’d had: hard, fair, and checked line by line.</p>
+  <p>Fourteen students have since taken them all the way to a 9.0. The floor here lights up the primes, the walls are Pascal’s triangle mod 2.</p>
+  <button class="more" data-go="23">&gt; GET THE PAPERS</button></div>
+<div class="ui sh panel" id="who"><span class="rail"></span><h2>WHO I WRITE FOR</h2>
+  <p>Anyone sitting the TMUA for maths, computer science or economics, at universities such as Cambridge, Imperial, LSE, Warwick, Durham and UCL.</p>
+  <p>You are falling into the Mandelbrot set: the same rule, z ↦ z² + c, all the way down.</p>
+  <button class="more" data-go="23">&gt; JOIN THE DISCORD</button></div>
+<div class="ui sh" id="outro">
+  <div><div class="cta">FIND ME ON DISCORD</div>
+    <div class="stat">9.0 TMUA · 14 students to 9.0 · community-made</div>
+    <div class="id"><a id="dlink" target="_blank" rel="noopener">OPEN PROFILE ↗</a><span>ID <code id="did"></code></span><button id="copy" type="button">COPY ID</button></div></div>
+  <div class="credit">Independent · not affiliated with UAT-UK<br>Inspired by <a href="https://fojcikdominik.com/" target="_blank" rel="noopener">fojcikdominik.com</a></div>
+</div>
+<div class="ui" id="hint">SCROLL ↓</div>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<nav id="menu" aria-label="Site">
+  <button class="x" id="menuClose">CLOSE ✕</button>
+  <button class="it" data-go="0"><span>[1]</span>Home</button>
+  <button class="it" data-go="2"><span>[1]</span>Papers</button>
+  <button class="it" data-go="9"><span>[2]</span>About</button>
+  <button class="it" data-go="18.6"><span>[3]</span>Who it’s for</button>
+  <button class="it" data-go="23"><span>[5]</span>Discord</button>
+  <div class="credit">Numbered 1, 1, 2, 3, 5 · F<sub>n+1</sub> / F<sub>n</sub> → φ<br>Design inspired by <a href="https://fojcikdominik.com/" target="_blank" rel="noopener">fojcikdominik.com</a></div>
+</nav>
+
+<div class="glass scan"></div><div class="glass tube"></div><canvas id="grain"></canvas>
+
+<main class="sr" id="sr"></main>
+
+<script>
+/* =====================================================================
+   CONTENT
+   ===================================================================== */
+const CONTENT = {
+  discord: { url: "https://discord.com/users/844819535500804167", id: "844819535500804167" },
+  papers: [
+    { label: "[01] SET 1 · PAPER 1", after: "after Euler" },
+    { label: "[02] SET 1 · PAPER 2", after: "after Euclid" },
+    { label: "[03] LOGIC FIELD GUIDE", after: "after De Morgan & Boole" },
+    { label: "[04] LIVE WALKTHROUGHS", after: "after Lorenz" }
+  ]
+};
+
+const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
+const C = CONTENT, PHI = (1 + Math.sqrt(5)) / 2, GOLDEN_ANGLE = Math.PI * (3 - Math.sqrt(5));
+$("#workList").innerHTML = C.papers.map((p, i) => `<li tabindex="0" data-i="${i}">${p.label}<small>${p.after}</small></li>`).join("");
+$("#dlink").href = C.discord.url; $("#did").textContent = C.discord.id;
+$("#sr").innerHTML = `<h1>Viluxent</h1><p>9.0 TMUA holder writing free, community-made TMUA mock papers and guides. 14 students have taken them to a 9.0.</p>
+  <h2>The papers</h2><ul><li>Set 1, Paper 1: Applications of Mathematical Knowledge, 20 questions, 75 minutes</li><li>Set 1, Paper 2: Mathematical Reasoning, 20 questions, 75 minutes</li><li>Logic field guide</li><li>Live walkthroughs on Discord</li></ul>
+  <h2>Contact</h2><p><a href="${C.discord.url}">Discord profile</a> (ID ${C.discord.id})</p>`;
+const toast = msg => { const t = $("#toast"); t.textContent = msg; t.classList.add("on"); clearTimeout(toast.h); toast.h = setTimeout(() => t.classList.remove("on"), 3600); };
+$("#copy").onclick = e => { const b = e.currentTarget, sel = () => { const r = document.createRange(); r.selectNodeContents($("#did")); const s = getSelection(); s.removeAllRanges(); s.addRange(r); b.textContent = "SELECTED"; };
+  try { navigator.clipboard.writeText(C.discord.id).then(() => b.textContent = "COPIED", sel); } catch { sel(); } };
+
+/* deterministic randomness for artwork */
+let seed = 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+const R = { frozen: null };
+
+/* ---------- camera: wheel / touch / keys drive a step count ---------- */
+let S = 0, ST = 0, entered = false, mob = innerWidth < 760;
+const smax = () => 27;
+const clampS = v => Math.max(0, Math.min(smax(), v));
+const menu = $("#menu"), mb = $("#menuBtn"), menuOpen = () => menu.classList.contains("open");
+addEventListener("wheel", e => { if (!entered || menuOpen()) return; e.preventDefault(); ST = clampS(ST + e.deltaY / (e.deltaMode === 1 ? 12 : e.deltaMode === 2 ? 1 : 500)); }, { passive: false });
+let ty = null;
+addEventListener("touchstart", e => { ty = e.touches[0].clientY; }, { passive: true });
+addEventListener("touchmove", e => { if (ty == null || !entered || menuOpen()) return; const y = e.touches[0].clientY; ST = clampS(ST + (ty - y) / 230); ty = y; }, { passive: true });
+addEventListener("touchend", () => { ty = null; }, { passive: true });
+let keys = "";
+addEventListener("keydown", e => {
+  if (e.key === "Escape") { setMenu(false); return; }
+  if (/^[0-9]$/.test(e.key)) { keys = (keys + e.key).slice(-4); if (keys === "1729") toast("1729 = 1³ + 12³ = 9³ + 10³ · the Hardy–Ramanujan taxicab number"); }
+  if (menuOpen() || !entered) return;
+  const k = { ArrowDown: 1, PageDown: 1, " ": 1, ArrowUp: -1, PageUp: -1 }[e.key];
+  if (k && !(e.key === " " && e.target.closest && e.target.closest("button,a"))) { e.preventDefault(); ST = clampS(Math.round(ST) + k); }
+  if (e.key === "Home") ST = 0; if (e.key === "End") ST = smax(); });
+const go = v => { ST = clampS(+v); setMenu(false); };
+$$("[data-go]").forEach(b => b.addEventListener("click", () => go(b.dataset.go)));
+let SLOTS = [2, 3.6, 5.45, 6.25], CORR = 7.25; const MANDEL = 15.6;
+const setTimeline = () => { SLOTS = mob ? [2.4, 4, 5.4, 6.35] : [2, 3.6, 5.45, 6.25]; CORR = mob ? 7.35 : 7.25; };
+$$("#workList li").forEach(li => { const f = () => go(SLOTS[+li.dataset.i]); li.onclick = f; li.onkeydown = e => { if (e.key === "Enter") f(); }; });
+
+/* ---------- menu ---------- */
+function setMenu(o) { menu.classList.toggle("open", o); mb.setAttribute("aria-expanded", o); if (o) $("#menuClose").focus(); }
+mb.onclick = () => setMenu(true); $("#menuClose").onclick = () => setMenu(false);
+
+/* ---------- loader: partial sums of Σ 1/k² approach π²/6 ---------- */
+const loader = $("#loader"), BASEL = Math.PI * Math.PI / 6; let ln = 0, lsum = 0, born = 0;
+const now = () => R.frozen ?? performance.now();
+const enter = () => { if (entered) return; entered = true; showSum(2000); loader.classList.add("done"); born = now(); };
+loader.onclick = enter;
+const LD_START = performance.now(), LD_MS = 1500;
+function showSum(n) { while (ln < n) { ln++; lsum += 1 / (ln * ln); } $("#ldN").textContent = ln; $("#ldS").textContent = lsum.toFixed(6);
+  $("#barDot").style.left = `${2 + Math.min(1, (lsum - 1) / (BASEL - 1)) * 144}px`; }
+(function ld() { if (entered) return;
+  const p = Math.min(1, (performance.now() - LD_START) / LD_MS); showSum(Math.max(1, Math.round(Math.pow(2000, p))));   // n grows geometrically to 2000
+  p < 1 ? requestAnimationFrame(ld) : setTimeout(enter, 450); })();
+setTimeout(enter, 3200);
+
+/* ---------- canvas ---------- */
+const cv = $("#stage"), g = cv.getContext("2d"); let W = 0, H = 0, DPR = 1;
+const mk = (w, h) => { const c = document.createElement("canvas"); c.width = Math.max(1, w); c.height = Math.max(1, h); return [c, c.getContext("2d")]; };
+const lerp = (a, b, t) => a + (b - a) * t, clamp01 = v => Math.max(0, Math.min(1, v)), ease = t => t * t * (3 - 2 * t);
+const MATH = '"Noto Serif","Noto Sans Math","Cambria Math","Times New Roman",serif';
+function resize() { DPR = Math.min(2, devicePixelRatio || 1); W = innerWidth; H = innerHeight; mob = W < 760;
+  cv.width = W * DPR; cv.height = H * DPR; g.setTransform(DPR, 0, 0, DPR, 0, 0); setTimeline(); buildAll(); mandelKey = ""; }
+let fontsReady = false;
+function buildAll() { seed = 11; buildSunflower(); buildPrimes(); if (fontsReady) { buildStudio(); buildScreens(); } }
+
+/* studio wall: blurred blackboard of famous results */
+let studio = null;
+function buildStudio() {
+  const [c, x] = mk(Math.ceil(W), Math.ceil(H * 3)); studio = c;
+  x.fillStyle = "#e6e9e9"; x.fillRect(0, 0, c.width, c.height);
+  const eq = ["e^(iπ) + 1 = 0", "Σ 1/n² = π²/6", "φ = (1 + √5) / 2", "F(n+1) / F(n) → φ", "∫ℝ e^(−x²) dx = √π", "a^p ≡ a (mod p)", "1729 = 1³ + 12³ = 9³ + 10³",
+    "a² + b² = c²", "√2 ∉ ℚ", "e = Σ 1/n!", "(Σ aᵢbᵢ)² ≤ Σ aᵢ² · Σ bᵢ²", "ζ(s) = Πₚ (1 − p^(−s))^(−1)", "1 + 2 + … + 100 = 5050", "¬(P ∧ Q) ⇔ ¬P ∨ ¬Q", "P ⇒ Q ≡ ¬Q ⇒ ¬P"];
+  x.fillStyle = "rgba(30,34,34,.2)"; x.filter = "blur(1.1px)"; const fs = mob ? 13 : 18;
+  let y = 24, i = 0; while (y < c.height) { x.font = `${i % 3 ? "italic " : ""}${fs}px ${MATH}`;
+    x.fillText(eq[i % eq.length] + "        " + eq[(i * 7 + 3) % eq.length] + "        " + eq[(i * 5 + 1) % eq.length], ((i * 137) % 300) - 120, y); i++; y += fs * PHI; }
+  x.filter = "none";
+}
+
+/* ---------- screens: four tributes, each φ : 1 ---------- */
+const SW = 1200, SH = Math.round(1200 / PHI);
+let SCR = [];
+function txt(x, s, px, py, font, col, align = "left") { x.font = font; x.fillStyle = col; x.textAlign = align; x.fillText(s, px, py); x.textAlign = "left"; }
+function buildScreens() {
+  const w = SW, h = SH; SCR = [];
+  // 1 · Euler — Paper 1 (static layer; the unit circle is drawn live on top)
+  { const [c, x] = mk(w, h); const gr = x.createLinearGradient(0, 0, 0, h); gr.addColorStop(0, "#0a1fd6"); gr.addColorStop(.5, "#1656ee"); gr.addColorStop(1, "#62d6ff");
+    x.fillStyle = gr; x.fillRect(0, 0, w, h);
+    txt(x, "SET 1 · PAPER 1", 44, 52, "700 18px Doto, monospace", "#dfeaff");
+    txt(x, "APPLICATIONS OF MATHEMATICAL KNOWLEDGE", 44, 76, "600 15px Doto, monospace", "#bcd2ff");
+    x.font = `italic 400 128px ${MATH}`; x.fillStyle = "#fff"; x.fillText("e", 44, 250); let ex = 44 + x.measureText("e").width;
+    x.font = `italic 400 72px ${MATH}`; x.fillText("iπ", ex + 4, 180); ex += x.measureText("iπ").width + 12;
+    x.font = `400 128px ${MATH}`; x.fillText("+ 1 = 0", ex, 250);
+    ["Twenty questions. Seventy-five minutes.", "Algebra, functions, calculus, geometry:", "the five constants of maths in one line,", "and the whole paper in one sitting."].forEach((l, i) => txt(x, l, 48, 330 + i * 27, "600 19px Doto, monospace", "#eaf2ff"));
+    txt(x, "20 QUESTIONS · 75 MINUTES", 48, h - 44, "700 15px Doto, monospace", "#ffffff");
+    txt(x, "after Euler", w - 44, h - 44, `italic 400 22px ${MATH}`, "#ffffff", "right");
+    SCR.push(c); }
+  // 2 · Euclid — Paper 2
+  { const [c, x] = mk(w, h); const gr = x.createLinearGradient(0, 0, w, h); gr.addColorStop(0, "#c4c7c7"); gr.addColorStop(1, "#8f9494");
+    x.fillStyle = gr; x.fillRect(0, 0, w, h);
+    txt(x, "SET 1 · PAPER 2", 44, 52, "800 18px Doto, monospace", "#111");
+    txt(x, "MATHEMATICAL REASONING", 44, 76, "600 15px Doto, monospace", "#333");
+    txt(x, "IF, THEN,", 40, 210, "400 112px Anton, Impact, sans-serif", "#fff"); txt(x, "THEREFORE", 40, 324, "400 112px Anton, Impact, sans-serif", "#fff");
+    const proof = ["Take any finite list of primes p₁, …, pₙ.", "Let N = p₁p₂⋯pₙ + 1.", "Dividing N by any pᵢ leaves remainder 1,", "so every prime factor of N is new.", "No finite list holds every prime."];
+    proof.forEach((l, i) => txt(x, l, 44, 392 + i * 30, `${i === 1 ? "italic " : ""}400 22px ${MATH}`, "#151515"));
+    x.font = `400 22px ${MATH}`; x.fillStyle = "#151515"; x.fillRect(44 + x.measureText(proof[4]).width + 10, 392 + 4 * 30 - 15, 15, 15);
+    for (let k = 0; k < 3; k++) { const cx0 = [890, 800, 980][k], cy0 = [210, 400, 400][k];
+      for (let n = 0; n < 3000; n++) { const a = rnd() * 6.283, r = Math.sqrt(rnd()) * 88; x.fillStyle = `rgba(10,10,10,${.55 + rnd() * .45})`; x.fillRect(cx0 + Math.cos(a) * r, cy0 + Math.sin(a) * r, 3, 3); } }
+    txt(x, "after Euclid, Elements IX.20", w - 44, h - 40, `italic 400 22px ${MATH}`, "#151515", "right");
+    SCR.push(c); }
+  // 3 · De Morgan & Boole — logic guide
+  { const [c, x] = mk(w, h); x.fillStyle = "#0b0b0b"; x.fillRect(0, 0, w, h);
+    txt(x, "FIELD GUIDE", 30, 36, "700 15px Doto, monospace", "#fff"); txt(x, "PAPER 2 COMPANION", w - 30, 36, "700 15px Doto, monospace", "#fff", "right");
+    txt(x, "LOGIC GUIDE", 24, 178, "400 150px Anton, Impact, sans-serif", "#fff");
+    x.fillStyle = "#f6c200"; x.fillRect(40, 216, w - 80, h - 216); x.fillStyle = "#ffe36a"; x.fillRect(40, 216, w - 80, 56);
+    txt(x, "¬(P ∧ Q)  ⇔  ¬P ∨ ¬Q", 64, 256, `400 30px ${MATH}`, "#111");
+    const vx = 330, vy = 486, vr = 140;
+    x.fillStyle = "#111"; x.fillRect(vx - 300, vy - 180, 600, 360);
+    x.save(); x.beginPath(); x.arc(vx - 80, vy, vr, 0, 7); x.clip(); x.beginPath(); x.arc(vx + 80, vy, vr, 0, 7); x.fillStyle = "#f6c200"; x.fill(); x.restore();
+    x.lineWidth = 5; x.strokeStyle = "#f6c200"; x.beginPath(); x.arc(vx - 80, vy, vr, 0, 7); x.stroke(); x.beginPath(); x.arc(vx + 80, vy, vr, 0, 7); x.stroke();
+    txt(x, "P", vx - 200, vy + 12, `italic 400 40px ${MATH}`, "#f6c200"); txt(x, "Q", vx + 176, vy + 12, `italic 400 40px ${MATH}`, "#f6c200");
+    txt(x, "shaded: ¬(P ∧ Q), everything outside P ∧ Q", vx - 300, vy + 214, `italic 400 21px ${MATH}`, "#111");
+    const tx = 730, tyy = 330, rows = [["P", "Q", "P ⇒ Q"], ["T", "T", "T"], ["T", "F", "F"], ["F", "T", "T"], ["F", "F", "T"]];
+    rows.forEach((r, j) => r.forEach((v, i) => txt(x, v, tx + i * 120, tyy + j * 50, `${j ? "" : "italic "}400 30px ${MATH}`, "#111")));
+    x.fillStyle = "#111"; x.fillRect(tx - 10, tyy + 14, 380, 3);
+    txt(x, "after De Morgan (1847) & Boole (1854)", w - 60, h - 32, `italic 400 22px ${MATH}`, "#111", "right");
+    SCR.push(c); }
+  // 4 · Lorenz — live walkthroughs
+  { const [c, x] = mk(w, h); x.fillStyle = "#050607"; x.fillRect(0, 0, w, h);
+    txt(x, "LIVE WALKTHROUGHS", 40, 54, "800 18px Doto, monospace", "#cfd8da");
+    txt(x, "ON DISCORD · ONE QUESTION, FROM COLD", 40, 80, "600 14px Doto, monospace", "#7f8b8f");
+    let X = 1, Y = 1, Z = 1; const dt = .004;
+    for (let n = 0; n < 30000; n++) { const dx = 10 * (Y - X), dy = X * (28 - Z) - Y, dz = X * Y - (8 / 3) * Z; X += dx * dt; Y += dy * dt; Z += dz * dt;
+      if (n < 400) continue; const px = w / 2 + 40 + X * 13.5, py = h - 70 - Z * 9.2, warm = X > 0;
+      x.fillStyle = warm ? "rgba(255,214,170,.55)" : "rgba(150,200,255,.55)"; x.fillRect(px, py, 1.8, 1.8); }
+    txt(x, "ẋ = σ(y − x)   ẏ = x(ρ − z) − y   ż = xy − βz", 40, h - 62, `italic 400 21px ${MATH}`, "#c9d3d6");
+    txt(x, "σ = 10, ρ = 28, β = 8/3 · after Lorenz, 1963 · chaos, tamed", 40, h - 32, `italic 400 18px ${MATH}`, "#8d999c");
+    SCR.push(c); }
+}
+
+/* ---------- hero: Vogel's sunflower spelling 9.0, over the golden spiral ---------- */
+let seeds = [];
+function buildSunflower() {
+  const N = mob ? 1100 : 1600, M = 400, [c, x] = mk(M, M);
+  x.fillStyle = "#000"; x.fillRect(0, 0, M, M); x.fillStyle = "#fff"; x.textAlign = "center"; x.textBaseline = "middle";
+  let fs = M * .62; x.font = `400 ${fs}px Anton, Impact, sans-serif`; const tw = x.measureText("9.0").width; if (tw > M * .9) { fs *= M * .9 / tw; x.font = `400 ${fs}px Anton, Impact, sans-serif`; }
+  x.fillText("9.0", M / 2, M * .53);
+  const d = x.getImageData(0, 0, M, M).data; seeds = [];
+  for (let n = 1; n <= N; n++) { const r = Math.sqrt(n / N), a = n * GOLDEN_ANGLE, u = r * Math.cos(a), v = r * Math.sin(a);
+    const px = Math.round((u * .5 + .5) * (M - 1)), py = Math.round((v * .5 + .5) * (M - 1)), on = d[(py * M + px) * 4] > 127;
+    seeds.push({ n, u, v, on, r }); }
+  $("#seedN").textContent = N;
+}
+function goldenSpiral(cx, cy, wd) {
+  let x = cx - wd / 2, y = cy - wd / PHI / 2, w = wd, h = wd / PHI;
+  g.lineWidth = 1; g.strokeStyle = "rgba(230,242,243,.2)"; g.strokeRect(x, y, w, h);
+  for (let i = 0; i < 12; i++) { const k = i % 4; let s;
+    if (k === 0) { s = h; g.strokeRect(x, y, s, s); g.beginPath(); g.arc(x + s, y + s, s, Math.PI, 1.5 * Math.PI); g.stroke(); x += s; w -= s; }
+    else if (k === 1) { s = w; g.strokeRect(x, y, s, s); g.beginPath(); g.arc(x, y + s, s, 1.5 * Math.PI, 2 * Math.PI); g.stroke(); y += s; h -= s; }
+    else if (k === 2) { s = h; g.strokeRect(x + w - s, y, s, s); g.beginPath(); g.arc(x + w - s, y, s, 0, .5 * Math.PI); g.stroke(); w -= s; }
+    else { s = w; g.strokeRect(x, y + h - s, s, s); g.beginPath(); g.arc(x + s, y + h - s, s, .5 * Math.PI, Math.PI); g.stroke(); h -= s; } }
+  return [x + w / 2, y + h / 2];
+}
+function drawHero(w, h, t) {
+  g.fillStyle = "#030404"; g.fillRect(-w, -h, w * 2, h * 2);
+  const gw = mob ? w * 1.5 : Math.min(w * .96, h * .96 * PHI);
+  const eye = goldenSpiral(mob ? w * .18 : 0, mob ? -h * .06 : 0, gw);
+  const R0 = mob ? Math.min(w * .44, h * .27) : Math.min(h * .38, w * .2);
+  const cx = 0, cy = mob ? -h * .05 : -h * (.5 - .45);
+  g.strokeStyle = "rgba(232,182,76,.35)"; g.beginPath(); g.moveTo(eye[0], eye[1]); g.lineTo(cx, cy); g.stroke();
+  if (!born) return; const grow = clamp01((t - born) / 3200), spin = (t / 90000) % 1;
+  for (const p of seeds) { const show = clamp01(grow * 1.25 - p.r * .9); if (!show) continue;
+    const x = cx + p.u * R0, y = cy + p.v * R0, sz = p.on ? (mob ? 3.2 : 4.4) : (mob ? 1.6 : 2);
+    g.globalAlpha = show * (p.on ? .95 : .3 + .12 * Math.sin(p.n * .7 + t / 600 + spin));
+    g.fillStyle = p.on ? (p.n % 13 === 0 ? "#e8b64c" : "#e6f2f3") : "#8fa6ad"; g.fillRect(x - sz / 2, y - sz / 2, sz, sz); }
+  g.globalAlpha = 1;
+  const by = h * (mob ? .2 : .3); g.fillStyle = "rgba(3,4,4,.45)"; g.fillRect(-w, by, w * 2, h * .3);
+  for (let i = 0; i < 60; i++) { g.fillStyle = `rgba(230,242,243,${.06 + rnd() * .2})`; g.fillRect(-w / 2 + rnd() * w, by + rnd() * 50 - 25, 6 + rnd() * 60, 1); }
+}
+
+/* ---------- about: the prime corridor (Ulam) with Sierpiński walls (Pascal mod 2) ---------- */
+let isPrime;
+function buildPrimes() { const N = 40000; isPrime = new Uint8Array(N + 1).fill(1); isPrime[0] = isPrime[1] = 0;
+  for (let i = 2; i * i <= N; i++) if (isPrime[i]) for (let j = i * i; j <= N; j += i) isPrime[j] = 0; }
+const COLS = [-.66, -.56, -.46, -.36, -.26, -.18, -.1, .1, .18, .26, .36, .46, .56, .66];
+function drawCorridor(w, h, t, depth) {
+  const fl = g.createLinearGradient(0, -h / 2, 0, h / 2); fl.addColorStop(0, "#101215"); fl.addColorStop(.3, "#24272e"); fl.addColorStop(1, "#3a3e47");
+  g.fillStyle = fl; g.fillRect(-w, -h, w * 2, h * 2);
+  const vy = -h * .5, base = h * .62, spread = mob ? 1.9 : .78, P = (x, z) => [x * w * spread / z, vy + (base - vy) / z];
+  const travel = t / 1500 + depth, sp = travel % 1, row0 = Math.floor(travel);
+  for (let k = 60; k >= 1; k--) { const z = k - sp; if (z < .45) continue; const f = clamp01(1 - z / 60), u = w / 1200 / z, row = (row0 + k) % 2800;
+    COLS.forEach((x, ci) => { const n = row * COLS.length + ci + 1, pr = isPrime[n], [px, py] = P(x, z), r = 15 * u;
+      if (pr) { g.fillStyle = `rgba(60,255,122,${.25 + f * .7})`; g.fillRect(px - r * 1.3, py - r * 1.1, r * 2.6, r * 1.1);
+        if (z < 7 && u > .1) { g.fillStyle = `rgba(5,20,10,${.9 * f})`; g.font = `700 ${Math.max(8, r * .9)}px Doto, monospace`; g.textAlign = "center"; g.fillText(n, px, py - r * .25); g.textAlign = "left"; } }
+      else { g.fillStyle = `rgba(8,9,11,${.5 + f * .5})`; g.fillRect(px - r, py - r * 2.2, r * 2, r * 2.2);
+        g.fillStyle = `rgba(150,155,162,${.35 + f * .6})`; g.beginPath(); g.ellipse(px, py - r * 2.2, r, r * .45, 0, 0, 7); g.fill(); } });
+    for (const s of [-1, 1]) { const [px, py] = P(s * .86, z), cell = 46 * u, rowP = (row % 64);
+      for (let j = 0; j < 12; j++) { const col = rowP >= j ? ((j & (rowP - j)) === 0) : false;   // C(rowP, j) is odd ⇔ j & (rowP − j) = 0
+        g.fillStyle = col ? `rgba(240,244,246,${.3 + f * .7})` : `rgba(70,76,84,${.15 + f * .35})`; g.fillRect(px - cell * .45, py - (j + 1.2) * cell, cell * .9, cell * .9); } } }
+  g.lineWidth = 2; for (const x of [-.03, .03]) { const [a, b] = P(x, .6), [c2, d2] = P(x, 60); g.strokeStyle = "rgba(200,206,210,.7)"; g.beginPath(); g.moveTo(a, b); g.lineTo(c2, d2); g.stroke(); }
+}
+
+/* ---------- finale: a dive into the Mandelbrot set ---------- */
+const TARGET = [-0.743643887037151, 0.131825904205330];
+let mandel, mandelKey = "";
+function renderMandel(s) {
+  const k = clamp01((s - MANDEL) / 1.6), scale = 3.2 * Math.exp(-.55 * Math.max(0, s - MANDEL)), cx = lerp(-.6, TARGET[0], ease(k)), cy = lerp(0, TARGET[1], ease(k));
+  const moving = Math.abs(ST - S) > .01 && R.frozen == null, mw = Math.round((mob ? 200 : 420) * (moving ? .4 : 1)), mh = Math.round(mw * H / W), key = `${mw}x${mh}:${scale.toPrecision(5)}:${cx.toPrecision(12)}`;
+  if (key === mandelKey) return; mandelKey = key;
+  if (!mandel || mandel.width !== mw || mandel.height !== mh) [mandel] = mk(mw, mh);
+  const x = mandel.getContext("2d"), img = x.createImageData(mw, mh), D = img.data, maxIt = Math.min(900, Math.round(140 + 60 * Math.max(0, s - MANDEL)));
+  const span = scale / mw;
+  for (let j = 0; j < mh; j++) for (let i = 0; i < mw; i++) {
+    const c0 = cx + (i - mw / 2) * span, c1 = cy + (j - mh / 2) * span; let zr = 0, zi = 0, it = 0, zr2 = 0, zi2 = 0;
+    while (zr2 + zi2 < 256 && it < maxIt) { zi = 2 * zr * zi + c1; zr = zr2 - zi2 + c0; zr2 = zr * zr; zi2 = zi * zi; it++; }
+    const o = (j * mw + i) * 4;
+    if (it >= maxIt) { D[o] = 4; D[o + 1] = 9; D[o + 2] = 18; }
+    else { const mu = it + 1 - Math.log2(Math.log(Math.sqrt(zr2 + zi2))), v = .5 + .5 * Math.cos(mu * .16), glow = Math.pow(clamp01(mu / maxIt * 3), .5);
+      D[o] = 20 + 200 * v * glow + 25 * v; D[o + 1] = 45 + 190 * v * glow + 35 * v; D[o + 2] = 80 + 170 * glow + 30 * v; }
+    D[o + 3] = 255; }
+  x.putImageData(img, 0, 0);
+}
+function drawMandel(a) {
+  renderMandel(S);
+  g.save(); g.globalAlpha = a; g.fillStyle = "#000"; g.fillRect(0, 0, W, H);
+  curved((w, h) => { g.imageSmoothingEnabled = true; g.drawImage(mandel, -w / 2, -h / 2, w, h);
+    const v = g.createRadialGradient(0, 0, Math.min(w, h) * .2, 0, 0, Math.max(w, h) * .62); v.addColorStop(0, "rgba(0,0,0,0)"); v.addColorStop(1, "rgba(0,6,14,.55)"); g.fillStyle = v; g.fillRect(-w / 2, -h / 2, w, h);
+  }, W / 2, H / 2, W * 1.02, H, 0, 1, .07, false);
+  g.restore();
+}
+
+/* ---------- drawing helpers ---------- */
+function curved(img, cx, cy, w, h, rot, squash, bulge, bezel) {
+  g.save(); g.translate(cx, cy); g.rotate(rot); g.scale(1, squash);
+  const n = 40, top = [], bot = [];
+  for (let i = 0; i <= n; i++) { const u = i / n * 2 - 1, hh = h * (1 + bulge * (1 - u * u)) / 2, x = -w / 2 + i * w / n; top.push([x, -hh]); bot.push([x, hh]); }
+  const path = (sx = 1, pad = 0) => { g.beginPath(); top.forEach(([x, y], k) => k ? g.lineTo(x * sx, y - pad) : g.moveTo(x * sx, y - pad)); bot.slice().reverse().forEach(([x, y]) => g.lineTo(x * sx, y + pad)); g.closePath(); };
+  if (bezel) { g.shadowColor = "rgba(0,0,0,.3)"; g.shadowBlur = 40; g.shadowOffsetY = 18; g.fillStyle = "#f3f5f5"; path(1.02, 8); g.fill(); g.shadowColor = "transparent"; }
+  if (typeof img === "function") { path(); g.save(); g.clip(); img(w, h); g.restore(); }
+  else for (let i = 0; i < n; i++) { const [x0, y0] = top[i], hh = -y0 * 2, sx = img.width * i / n; g.drawImage(img, sx, 0, img.width / n + 1, img.height, x0, y0, w / n + .8, hh); }
+  g.restore();
+}
+function eulerScreen(k) { return (w, h) => {           // Paper 1, with a live unit circle tracing e^{iθ}
+  const sx = w / SW, sy = h / SH; g.drawImage(SCR[0], -w / 2, -h / 2, w, h);
+  const cx = -w / 2 + 930 * sx, cy = -h / 2 + 330 * sy, r = 170 * Math.min(sx, sy), th = (now() / 2400) % (2 * Math.PI);
+  g.lineWidth = Math.max(1, 3 * sx); g.strokeStyle = "rgba(255,255,255,.85)"; g.beginPath(); g.arc(cx, cy, r, 0, 7); g.stroke();
+  g.strokeStyle = "rgba(255,255,255,.35)"; g.beginPath(); g.moveTo(cx - r * 1.2, cy); g.lineTo(cx + r * 1.2, cy); g.moveTo(cx, cy - r * 1.2); g.lineTo(cx, cy + r * 1.2); g.stroke();
+  const px = cx + r * Math.cos(th), py = cy - r * Math.sin(th);
+  g.strokeStyle = "#ffe36a"; g.lineWidth = Math.max(1.5, 4 * sx); g.beginPath(); g.moveTo(cx, cy); g.lineTo(px, py); g.stroke();
+  g.strokeStyle = "rgba(255,227,106,.6)"; g.beginPath(); g.arc(cx, cy, r * .22, 0, -th, true); g.stroke();
+  g.fillStyle = "#ffe36a"; g.beginPath(); g.arc(px, py, Math.max(3, 8 * sx), 0, 7); g.fill();
+  g.fillStyle = "#fff"; g.font = `italic 400 ${Math.max(10, 26 * sx)}px ${MATH}`; g.fillText("cos θ + i sin θ", cx - r * .9, cy + r * 1.45); }; }
+
+/* ---------- scene graph ---------- */
+function frame() {
+  const t = now(); if (R.frozen == null) S += (ST - S) * .085; else S = ST;
+  g.setTransform(DPR, 0, 0, DPR, 0, 0); seed = 7 + (R.frozen == null ? (t / 90 | 0) : 0);
+  const fin = ease(clamp01((S - MANDEL) / .8));
+  if (fin < 1) {
+    if (studio) g.drawImage(studio, 0, (S * H * .55) % (studio.height - H), W, H, 0, 0, W, H); else { g.fillStyle = "#e6e9e9"; g.fillRect(0, 0, W, H); }
+    const vg = g.createRadialGradient(W / 2, H / 2, H * .12, W / 2, H / 2, Math.max(W, H) * .68); vg.addColorStop(0, "rgba(255,255,255,.85)"); vg.addColorStop(.55, "rgba(255,255,255,.1)"); vg.addColorStop(1, "rgba(70,76,78,.6)");
+    g.fillStyle = vg; g.fillRect(0, 0, W, H);
+    const sw = mob ? W * .94 : W * .58, sh = sw / PHI, pitchIn = mob ? H * .47 : H * .48, pitchOut = mob ? H * .5 : H * .62;
+    const order = [0, 1, 2, 3].map(k => ({ k, d: SLOTS[k] - S })).filter(o => o.d < 2.4 && o.d > -2).sort((a, b) => Math.abs(b.d) - Math.abs(a.d));
+    for (const { k, d } of order) { if (!SCR[k]) continue; const side = k % 2 ? -1 : 1, ad = Math.abs(d);
+      const cx = W * .497 + (d < 0 ? -side * W * (mob ? .05 : .2) * Math.min(1, ad) : side * W * .03 * Math.min(1, ad)), cy = H * (mob ? .42 : .5) + (d < 0 ? d * pitchOut : d * pitchIn);
+      curved(k === 0 ? eulerScreen() : SCR[k], cx, cy, sw, sh, (d < 0 ? -.09 : .05) * side * Math.min(1.3, ad), 1 - (d < 0 ? .42 : .12) * Math.min(1, ad), .07, true); }
+    const dc = CORR - S, grow = ease(clamp01((S - CORR) / 2.2));
+    if (dc < 2.4) { const cw = lerp(mob ? W * 1.14 : W * .8, W * 1.1, grow), ch = lerp(mob ? H * .46 : H * .86, H * 1.1, grow);
+      curved((w, h) => drawCorridor(w, h, t, S * .55), W / 2, H / 2 + Math.max(0, dc) * (mob ? H * .47 : H * .48), cw, ch, dc > 0 ? .03 * Math.min(1, dc) : 0, 1 - .1 * clamp01(dc), .05 * (1 - grow), grow < .9); }
+    if (S < 1.8) { const k = clamp01(S / 1.1);
+      curved((w, h) => drawHero(w, h, t), W / 2, H / 2 - ease(k) * H * (mob ? .72 : .68), W * 1.12, H * 1.14, -.04 * k, 1 - .2 * k, .07 * k, false); }
+  }
+  if (fin > 0) drawMandel(fin);
+  const vis = (a, b, fa = .35) => clamp01(Math.min((S - a) / fa + 1, (b - S) / fa + 1));
+  const set = (id, o) => { const e = $(id); e.style.opacity = o; e.style.visibility = o > .02 ? "visible" : "hidden"; };
+  const on = entered ? 1 : 0;
+  set("#heroL", vis(0, .3) * on); set("#heroR", vis(0, .3) * on); set("#heroCap", vis(0, .3) * on); set("#hint", vis(0, .2) * on);
+  set("#work", vis(1.4, 6.4)); set("#about", vis(7.8, 10.6));
+  set("#who", vis(17.4, 21.2)); set("#outro", vis(22.2, 99));
+  const cur = SLOTS.reduce((b, v, i) => Math.abs(v - S) < Math.abs(SLOTS[b] - S) ? i : b, 0);
+  $$("#workList li").forEach((li, i) => li.classList.toggle("on", i === cur));
+  if (R.frozen == null) requestAnimationFrame(frame);
+}
+
+/* grain */
+(() => { const c = $("#grain"), x = c.getContext("2d"); c.width = 160; c.height = 100; const id = x.createImageData(160, 100);
+  (function gr() { for (let i = 0; i < id.data.length; i += 4) { const v = Math.random() * 255; id.data[i] = id.data[i + 1] = id.data[i + 2] = v; id.data[i + 3] = 255; }
+    x.putImageData(id, 0, 0); if (R.frozen == null) setTimeout(() => requestAnimationFrame(gr), 70); })(); })();
+
+addEventListener("resize", resize); resize();
+// canvas text needs its fonts loaded explicitly; rebuild the artwork once they are
+Promise.all(['400 40px Anton', '700 18px Doto', 'italic 400 40px "Noto Serif"', '400 40px "Noto Serif"', '400 40px "Noto Sans Math"'].map(f => document.fonts.load(f, "e iπ ∧∨¬⇔⇒ₙ⋯ẋσρβ√∫ζΠ≡ℚ∉→φ9.0")))
+  .catch(() => {}).then(() => { fontsReady = true; buildAll(); mandelKey = ""; });
+setTimeout(() => { if (!fontsReady) { fontsReady = true; buildAll(); } }, 6000);   // slow network: draw with fallback fonts
+requestAnimationFrame(frame);
+
+/* capture hook for visual checks: render step `s` at fixed time `ms` after entering */
+window.__view = (s, ms = 4000) => { loader.style.transition = "none"; enter(); born = 1; R.frozen = 1 + ms; ST = S = s; frame(); };
+</script>
+</body>
+</html>
