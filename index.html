@@ -536,7 +536,8 @@ setTimeout(() => { if (!fontsReady) { fontsReady = true; buildAll(); } }, 6000);
 requestAnimationFrame(frame);
 
 /* ---------- music: starts on the first click or key press, loops seamlessly ---------- */
-const AUDIO_SRC = "audio/vamp-anthem.mp3", VOL = .55;
+// the song can sit next to index.html under its original name, or in audio/
+const AUDIO_SRCS = ["Vamp_Anthem.mp3", "vamp-anthem.mp3", "audio/vamp-anthem.mp3"], VOL = .55;
 const snd = { ctx: null, buf: null, src: null, gain: null, an: null, bins: null, el: null, ready: false, on: false, want: true, pending: false, level: 0 };
 try { snd.want = localStorage.getItem("viluxent-sound") !== "off"; } catch {}
 const sBtn = $("#soundBtn");
@@ -546,16 +547,16 @@ function soundReady() { snd.ready = true; sBtn.hidden = false; if (snd.pending) 
 (async function loadSound() {
   try {
     const AC = window.AudioContext || window.webkitAudioContext; if (!AC) throw 0;
-    const r = await fetch(AUDIO_SRC); if (!r.ok) throw 0;
-    const data = await r.arrayBuffer(); snd.ctx = new AC();
+    let r = null; for (const u of AUDIO_SRCS) { try { const q = await fetch(u); if (q.ok) { r = q; break; } } catch {} }
+    if (!r) throw 0; const data = await r.arrayBuffer(); snd.ctx = new AC();
     snd.buf = await new Promise((ok, no) => snd.ctx.decodeAudioData(data, ok, no));     // callback form works in older Safari too
     soundReady();
   } catch {                                                                              // no Web Audio, or fetch blocked: plain looping <audio>
     if (snd.ctx) { try { snd.ctx.close(); } catch {} snd.ctx = null; }
-    const a = new Audio(); a.loop = true; a.preload = "auto"; a.volume = VOL;
+    const a = new Audio(); a.loop = true; a.preload = "auto"; a.volume = VOL; let k = 0;
     a.addEventListener("canplay", () => { if (!snd.ready) { snd.el = a; soundReady(); } }, { once: true });
-    a.addEventListener("error", () => { sBtn.hidden = true; }, { once: true });          // no file: the site simply has no music
-    a.src = AUDIO_SRC;
+    a.addEventListener("error", () => { if (++k < AUDIO_SRCS.length) a.src = AUDIO_SRCS[k]; else sBtn.hidden = true; });   // no file anywhere: no music
+    a.src = AUDIO_SRCS[0];
   }
 })();
 function soundOn() {
