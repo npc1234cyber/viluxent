@@ -86,6 +86,11 @@ header{position:fixed;top:0;left:0;right:0;z-index:25;display:flex;justify-conte
 #outro .credit{font-size:var(--t0);opacity:.85;text-align:right;line-height:1.5}
 #outro .credit a{border-bottom:1px solid rgba(255,255,255,.5)}
 
+.eq{display:inline-flex;align-items:flex-end;gap:2px;height:9px;margin-left:7px;vertical-align:-1px}
+.eq i{display:block;width:2px;height:3px;background:currentColor;transition:height .2s}
+#soundBtn.on .eq i{animation:eq .9s ease-in-out infinite alternate}
+#soundBtn.on .eq i:nth-child(2){animation-delay:-.3s}#soundBtn.on .eq i:nth-child(3){animation-delay:-.6s}#soundBtn.on .eq i:nth-child(4){animation-delay:-.15s}
+@keyframes eq{0%{height:2px}100%{height:9px}}
 #prog{position:fixed;top:0;left:0;height:2px;width:0;z-index:26;background:linear-gradient(90deg,var(--gold),#fff);box-shadow:0 0 8px rgba(232,182,76,.6)}
 #railnav{position:fixed;right:calc(var(--gx) + 1px);top:50%;transform:translateY(-50%);z-index:24;display:flex;flex-direction:column;gap:14px;align-items:flex-end;mix-blend-mode:difference;color:#fff}
 #railnav button{display:flex;align-items:center;gap:10px;font-size:10.5px;font-weight:500;letter-spacing:.18em;text-transform:uppercase;opacity:.55;transition:opacity .25s}
@@ -134,7 +139,7 @@ header{position:fixed;top:0;left:0;right:0;z-index:25;display:flex;justify-conte
   #hint{display:none}
   #railnav{display:none}
 }
-@media (prefers-reduced-motion:reduce){#menu,#loader,#toast{transition:none}}
+@media (prefers-reduced-motion:reduce){#menu,#loader,#toast{transition:none}#soundBtn.on .eq i{animation:none;height:7px}}
 </style>
 </head>
 <body>
@@ -148,6 +153,7 @@ header{position:fixed;top:0;left:0;right:0;z-index:25;display:flex;justify-conte
 <header>
   <button class="brand sh" data-go="0" aria-label="Viluxent, back to start">VILUXENT<span class="qed" aria-hidden="true"></span></button>
   <nav class="hnav">
+    <button id="soundBtn" type="button" aria-pressed="false" aria-label="Music: off. Click to play." hidden>SOUND<span class="eq" aria-hidden="true"><i></i><i></i><i></i><i></i></span></button>
     <button data-go="23">LET’S TALK<span class="dotg"></span></button>
     <button id="menuBtn" aria-expanded="false" aria-controls="menu">MENU<span class="burger"></span></button>
   </nav>
@@ -381,10 +387,10 @@ function drawHero(w, h, t) {
   const eye = goldenSpiral(mob ? w * .18 : 0, mob ? -h * .06 : 0, gw);
   const R0 = mob ? Math.min(w * .44, h * .27) : Math.min(h * .36, w * .175);
   const cx = 0, cy = mob ? -h * .05 : -h * (.5 - .45);
-  if (!born) return; const grow = clamp01((t - born) / 3200), spin = (t / 90000) % 1;
-  const halo = g.createRadialGradient(cx, cy, R0 * .1, cx, cy, R0 * 1.25); halo.addColorStop(0, `rgba(120,170,190,${.12 * grow})`); halo.addColorStop(1, "rgba(120,170,190,0)"); g.fillStyle = halo; g.fillRect(cx - R0 * 1.3, cy - R0 * 1.3, R0 * 2.6, R0 * 2.6);
+  if (!born) return; const grow = clamp01((t - born) / 3200), spin = (t / 90000) % 1, beat = Math.pow(soundLevel(), 2.2);
+  const halo = g.createRadialGradient(cx, cy, R0 * .1, cx, cy, R0 * 1.25); halo.addColorStop(0, `rgba(120,170,190,${(.12 + .22 * beat) * grow})`); halo.addColorStop(1, "rgba(120,170,190,0)"); g.fillStyle = halo; g.fillRect(cx - R0 * 1.3, cy - R0 * 1.3, R0 * 2.6, R0 * 2.6);
   for (const p of seeds) { const show = clamp01(grow * 1.25 - p.r * .9); if (!show) continue;
-    const x = cx + p.u * R0, y = cy + p.v * R0, sz = p.on ? (mob ? 3.4 : 4.6) : (mob ? 1.4 : 1.8);
+    const x = cx + p.u * R0, y = cy + p.v * R0, sz = (p.on ? (mob ? 3.4 : 4.6) : (mob ? 1.4 : 1.8)) * (1 + .22 * beat);
     g.globalAlpha = show * (p.on ? 1 : .16 + .08 * Math.sin(p.n * .7 + t / 600 + spin));
     g.fillStyle = p.on ? (p.n % 13 === 0 ? "#e8b64c" : "#e6f2f3") : "#8fa6ad"; g.fillRect(x - sz / 2, y - sz / 2, sz, sz); }
   g.globalAlpha = 1;
@@ -528,6 +534,63 @@ Promise.all(['400 40px Anton', '700 18px Doto', '400 20px "JetBrains Mono"', '50
   .catch(() => {}).then(() => { fontsReady = true; buildAll(); mandelKey = ""; });
 setTimeout(() => { if (!fontsReady) { fontsReady = true; buildAll(); } }, 6000);   // slow network: draw with fallback fonts
 requestAnimationFrame(frame);
+
+/* ---------- music: starts on the first click or key press, loops seamlessly ---------- */
+const AUDIO_SRC = "audio/vamp-anthem.mp3", VOL = .55;
+const snd = { ctx: null, buf: null, src: null, gain: null, an: null, bins: null, el: null, ready: false, on: false, want: true, pending: false, level: 0 };
+try { snd.want = localStorage.getItem("viluxent-sound") !== "off"; } catch {}
+const sBtn = $("#soundBtn");
+function soundUI() { sBtn.classList.toggle("on", snd.on); sBtn.setAttribute("aria-pressed", snd.on);
+  sBtn.setAttribute("aria-label", snd.on ? "Music: on. Click to mute." : "Music: off. Click to play."); }
+function soundReady() { snd.ready = true; sBtn.hidden = false; if (snd.pending) { snd.pending = false; soundOn(); } }
+(async function loadSound() {
+  try {
+    const AC = window.AudioContext || window.webkitAudioContext; if (!AC) throw 0;
+    const r = await fetch(AUDIO_SRC); if (!r.ok) throw 0;
+    const data = await r.arrayBuffer(); snd.ctx = new AC();
+    snd.buf = await new Promise((ok, no) => snd.ctx.decodeAudioData(data, ok, no));     // callback form works in older Safari too
+    soundReady();
+  } catch {                                                                              // no Web Audio, or fetch blocked: plain looping <audio>
+    if (snd.ctx) { try { snd.ctx.close(); } catch {} snd.ctx = null; }
+    const a = new Audio(); a.loop = true; a.preload = "auto"; a.volume = VOL;
+    a.addEventListener("canplay", () => { if (!snd.ready) { snd.el = a; soundReady(); } }, { once: true });
+    a.addEventListener("error", () => { sBtn.hidden = true; }, { once: true });          // no file: the site simply has no music
+    a.src = AUDIO_SRC;
+  }
+})();
+function soundOn() {
+  snd.want = true; try { localStorage.setItem("viluxent-sound", "on"); } catch {}
+  if (!snd.ready) { snd.pending = true; if (snd.ctx) snd.ctx.resume(); return; }
+  if (snd.ctx) {
+    snd.ctx.resume();
+    if (!snd.src) {
+      snd.gain = snd.ctx.createGain(); snd.an = snd.ctx.createAnalyser(); snd.an.fftSize = 256; snd.bins = new Uint8Array(snd.an.frequencyBinCount);
+      snd.src = snd.ctx.createBufferSource(); snd.src.buffer = snd.buf; snd.src.loop = true;
+      snd.src.connect(snd.gain); snd.gain.connect(snd.an); snd.an.connect(snd.ctx.destination); snd.src.start();
+    }
+    const t = snd.ctx.currentTime; snd.gain.gain.cancelScheduledValues(t); snd.gain.gain.setValueAtTime(snd.gain.gain.value, t); snd.gain.gain.linearRampToValueAtTime(VOL, t + 1.2);
+  } else if (snd.el) { snd.el.play().catch(() => { snd.on = false; soundUI(); }); }
+  snd.on = true; soundUI();
+}
+function soundOff() {
+  snd.want = false; snd.pending = false; try { localStorage.setItem("viluxent-sound", "off"); } catch {}
+  if (snd.ctx && snd.gain) { const t = snd.ctx.currentTime; snd.gain.gain.cancelScheduledValues(t); snd.gain.gain.setValueAtTime(snd.gain.gain.value, t); snd.gain.gain.linearRampToValueAtTime(0, t + .35); }
+  else if (snd.el) snd.el.pause();
+  snd.on = false; soundUI();
+}
+sBtn.addEventListener("click", () => snd.on || snd.pending ? soundOff() : soundOn());
+// the first real interaction anywhere (click, tap or key) starts the music, unless the visitor muted it before
+function firstGesture(e) {
+  if (sBtn.contains(e.target)) return;                                                   // the toggle handles itself
+  ["pointerup", "touchend", "keydown"].forEach(t => removeEventListener(t, firstGesture, true));
+  if (snd.want && !snd.on) soundOn();
+}
+["pointerup", "touchend", "keydown"].forEach(t => addEventListener(t, firstGesture, true));
+function soundLevel() {                                                                  // smoothed bass level, 0..1, for the visuals
+  if (!snd.on || !snd.an) { snd.level *= .9; return snd.level; }
+  snd.an.getByteFrequencyData(snd.bins); let b = 0; for (let i = 1; i < 7; i++) b += snd.bins[i];
+  snd.level += (b / (6 * 255) - snd.level) * .3; return snd.level;
+}
 
 /* capture hook for visual checks: render step `s` at fixed time `ms` after entering */
 window.__view = (s, ms = 4000) => { loader.style.transition = "none"; enter(); born = 1; R.frozen = 1 + ms; ST = S = s; frame(); };
