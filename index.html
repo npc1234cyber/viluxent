@@ -166,6 +166,7 @@ img{max-width:100%}
 #loader.done{opacity:0;visibility:hidden}
 .ld{display:grid;justify-items:center;gap:var(--s4)}
 .ld .wm{font-size:var(--t6);color:var(--fg)}
+#ldArt{display:block;width:195px;height:143px;margin-bottom:var(--s2)}
 .bar{width:180px;height:3px;border-radius:3px;background:var(--line-2);position:relative;overflow:hidden}
 .bar i{position:absolute;top:0;left:0;width:10px;height:3px;border-radius:3px;background:var(--accent);box-shadow:0 0 10px var(--accent)}
 .ld .sum{font-family:var(--f-mono);font-size:var(--t1);color:var(--fg-3);font-variant-numeric:tabular-nums;white-space:nowrap}
@@ -336,7 +337,7 @@ img{max-width:100%}
 <div class="glass scan"></div><div class="glass tube"></div><canvas id="grain"></canvas>
 
 <div id="loader" role="status" aria-label="Loading">
-  <div class="ld"><span class="wm">VILUXENT<span class="qed" aria-hidden="true"></span></span><div class="bar"><i id="barDot"></i></div>
+  <div class="ld"><canvas id="ldArt" aria-hidden="true"></canvas><span class="wm">VILUXENT<span class="qed" aria-hidden="true"></span></span><div class="bar"><i id="barDot"></i></div>
     <div class="sum"><span class="m">Σ</span><sub>k≤<span id="ldN">1</span></sub> <span class="m">1/k²</span> = <span id="ldS">1.000000</span> <span class="m">→ π²/6</span></div></div>
 </div>
 
@@ -627,13 +628,60 @@ const loader = $("#loader"), BASEL = Math.PI * Math.PI / 6; let ln = 0, lsum = 0
 const now = () => R.frozen ?? performance.now();
 const enter = () => { if (entered) return; entered = true; showSum(2000); loader.classList.add("done"); born = now(); };
 loader.onclick = enter;
-const LD_START = performance.now(), LD_MS = 1500;
+const LD_START = performance.now(), LD_MS = 2400;
 function showSum(n) { while (ln < n) { ln++; lsum += 1 / (ln * ln); } $("#ldN").textContent = ln; $("#ldS").textContent = lsum.toFixed(6);
   $("#barDot").style.left = `${2 + Math.min(1, (lsum - 1) / (BASEL - 1)) * 144}px`; }
 (function ld() { if (entered) return;
   const p = Math.min(1, (performance.now() - LD_START) / LD_MS); showSum(Math.max(1, Math.round(Math.pow(2000, p))));   // n grows geometrically to 2000
-  p < 1 ? requestAnimationFrame(ld) : setTimeout(enter, 450); })();
-setTimeout(enter, 3200);
+  p < 1 ? requestAnimationFrame(ld) : setTimeout(enter, 650); })();
+setTimeout(enter, 4400);
+
+/* loader art: a 15 × 11 dot-matrix board, the same material as the wordmark. As the bar sums 1/k²
+   it morphs Σ (the sum) → π (the answer is π²/6) → φ (the site's proportions) → ∞ (the limit) → 9.0. */
+const LD_GLYPHS = (() => {
+  const nine = [".###.", "#...#", "#...#", "#...#", ".####", "....#", "....#", "#...#", ".###."];
+  const zero = [".###.", "#...#", "#..##", "#.#.#", "##..#", "#...#", "#...#", "#...#", ".###."];
+  const blank = "...............";
+  const n90 = [blank, ...nine.map((r, i) => "." + r + "." + (i === 8 ? "#" : ".") + "." + zero[i] + "."), blank];
+  return [
+    [blank, "..###########..", "..##.......##..", "...##..........", "....##.........", ".....##........", "....##.........", "...##..........", "..##.......##..", "..###########..", blank],
+    [blank, ".#############.", ".#############.", "....##...##....", "....##...##....", "....##...##....", "....##...##....", "....##...##....", "...##....##....", "..##.....####..", blank],
+    [".......#.......", ".......#.......", "....#######....", "...##..#..##...", "..##...#...##..", "..##...#...##..", "..##...#...##..", "...##..#..##...", "....#######....", ".......#.......", ".......#......."],
+    [blank, blank, "..###.....###..", ".#...#...#...#.", "#.....#.#.....#", "#......#......#", "#.....#.#.....#", ".#...#...#...#.", "..###.....###..", blank, blank],
+    n90
+  ];
+})();
+(function loaderArt() {
+  const cv = $("#ldArt"); if (!cv || !cv.getContext) return;
+  const COLS = 15, ROWS = 11, PITCH = 13, W0 = COLS * PITCH, H0 = ROWS * PITCH, dpr = Math.min(2, devicePixelRatio || 1);
+  cv.width = W0 * dpr; cv.height = H0 * dpr; const x = cv.getContext("2d"); x.scale(dpr, dpr);
+  const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const dots = []; for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) dots.push({ r, c, v: 0, lit: -1e9 });
+  const GOLD = [232, 182, 76], WHITE = [238, 241, 244];
+  let shown = -1, swapAt = 0, stopAt = 0;
+  function frameArt(t) {
+    const p = Math.min(1, (performance.now() - LD_START) / LD_MS);
+    const g = still || entered ? 4 : p < .2 ? 0 : p < .4 ? 1 : p < .6 ? 2 : p < .8 ? 3 : 4;
+    if (g !== shown) { shown = g; swapAt = t; }
+    const bmp = LD_GLYPHS[g];
+    x.clearRect(0, 0, W0, H0);
+    for (const d of dots) {
+      const on = bmp[d.r][d.c] === "#", delay = still ? 0 : (d.c + d.r) * 16;            // diagonal sweep
+      if (t - swapAt >= delay) { const target = on ? 1 : 0; if (target && d.v < .5 && d.lit < swapAt) d.lit = t; d.v += (target - d.v) * (still ? 1 : .28); }
+      const cx = d.c * PITCH + PITCH / 2, cy = d.r * PITCH + PITCH / 2;
+      x.fillStyle = "rgba(255,255,255,.07)"; x.beginPath(); x.arc(cx, cy, 2.2, 0, 6.2832); x.fill();   // the board
+      if (d.v > .02) {
+        const flash = Math.max(0, 1 - (t - d.lit) / 380), gold = (g === 4 && d.r === 9 && d.c === 7) ? 1 : flash;   // the decimal point stays gold
+        const col = WHITE.map((w, i) => Math.round(w + (GOLD[i] - w) * gold));
+        x.fillStyle = `rgba(${col[0]},${col[1]},${col[2]},${.16 * d.v})`; x.beginPath(); x.arc(cx, cy, 5.6, 0, 6.2832); x.fill();   // glow
+        x.fillStyle = `rgba(${col[0]},${col[1]},${col[2]},${d.v})`; x.beginPath(); x.arc(cx, cy, 3.6 * (.75 + .25 * d.v), 0, 6.2832); x.fill();
+      }
+    }
+    if (entered && !stopAt) stopAt = t + 900;                                              // keep drawing through the fade, then stop
+    if (!stopAt || t < stopAt) requestAnimationFrame(frameArt);
+  }
+  requestAnimationFrame(frameArt);
+})();
 
 /* ---------- canvas ---------- */
 const cv = $("#stage"), g = cv.getContext("2d"); let W = 0, H = 0, DPR = 1;
@@ -647,15 +695,15 @@ function buildAll() { seed = 11; buildSunflower(); buildPrimes(); if (fontsReady
 
 /* studio wall: blurred blackboard of famous results */
 let studio = null;
+const STUDIO_K = .5;   // the formula wall is drawn at half resolution; the upscale softens it (no costly blur filter)
 function buildStudio() {
-  const [c, x] = mk(Math.ceil(W), Math.ceil(H * 3)); studio = c;
+  const k = STUDIO_K, [c, x] = mk(Math.ceil(W * k), Math.ceil(H * 3 * k)); studio = c;
   x.fillStyle = "#e6e9e9"; x.fillRect(0, 0, c.width, c.height);
   const eq = ["e^(iπ) + 1 = 0", "Σ 1/n² = π²/6", "φ = (1 + √5) / 2", "F(n+1) / F(n) → φ", "∫ℝ e^(−x²) dx = √π", "a^p ≡ a (mod p)", "1729 = 1³ + 12³ = 9³ + 10³",
     "a² + b² = c²", "√2 ∉ ℚ", "e = Σ 1/n!", "(Σ aᵢbᵢ)² ≤ Σ aᵢ² · Σ bᵢ²", "ζ(s) = Πₚ (1 − p^(−s))^(−1)", "1 + 2 + … + 100 = 5050", "¬(P ∧ Q) ⇔ ¬P ∨ ¬Q", "P ⇒ Q ≡ ¬Q ⇒ ¬P"];
-  x.fillStyle = "rgba(30,34,34,.12)"; x.filter = "blur(1.1px)"; const fs = mob ? 13 : 18;
-  let y = 24, i = 0; while (y < c.height) { x.font = `${i % 3 ? "italic " : ""}${fs}px ${MATH}`;
-    x.fillText(eq[i % eq.length] + "        " + eq[(i * 7 + 3) % eq.length] + "        " + eq[(i * 5 + 1) % eq.length], ((i * 137) % 300) - 120, y); i++; y += fs * PHI; }
-  x.filter = "none";
+  x.fillStyle = "rgba(30,34,34,.12)"; const fs = (mob ? 13 : 18) * k;
+  let y = 24 * k, i = 0; while (y < c.height) { x.font = `${i % 3 ? "italic " : ""}${fs}px ${MATH}`;
+    x.fillText(eq[i % eq.length] + "        " + eq[(i * 7 + 3) % eq.length] + "        " + eq[(i * 5 + 1) % eq.length], (((i * 137) % 300) - 120) * k, y); i++; y += fs * PHI; }
 }
 
 /* ---------- screens: four tributes, each φ : 1 ---------- */
@@ -855,7 +903,7 @@ function frame() {
   g.setTransform(DPR, 0, 0, DPR, 0, 0); seed = 7 + (R.frozen == null ? (t / 90 | 0) : 0);
   const fin = ease(clamp01((S - MANDEL) / .8));
   if (fin < 1) {
-    if (studio) g.drawImage(studio, 0, (S * H * .55) % (studio.height - H), W, H, 0, 0, W, H); else { g.fillStyle = "#e6e9e9"; g.fillRect(0, 0, W, H); }
+    if (studio) { const k = STUDIO_K; g.imageSmoothingEnabled = true; g.drawImage(studio, 0, ((S * H * .55) % (H * 2)) * k, W * k, H * k, 0, 0, W, H); } else { g.fillStyle = "#e6e9e9"; g.fillRect(0, 0, W, H); }
     const vg = g.createRadialGradient(W / 2, H / 2, H * .12, W / 2, H / 2, Math.max(W, H) * .68); vg.addColorStop(0, "rgba(255,255,255,.85)"); vg.addColorStop(.55, "rgba(255,255,255,.1)"); vg.addColorStop(1, "rgba(70,76,78,.6)");
     g.fillStyle = vg; g.fillRect(0, 0, W, H);
     const sw = mob ? W * .94 : W * .58, sh = sw / PHI, pitchIn = mob ? H * .47 : H * .48, pitchOut = mob ? H * .5 : H * .62;
@@ -906,7 +954,7 @@ const IOS = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform ==
 try { if (navigator.audioSession) navigator.audioSession.type = "playback"; } catch {}
 const USE_EL = !AC || (IOS && !navigator.audioSession);
 const snd = { ctx: null, data: null, buf: null, decoding: false, src: null, gain: null, an: null, bins: null, el: null, ready: false, on: false, want: true, level: 0 };
-try { snd.want = localStorage.getItem("viluxent-sound") !== "off"; } catch {}
+try { snd.want = sessionStorage.getItem("viluxent-sound") !== "off"; } catch {}          // muting lasts for this visit only
 const sBtn = $("#soundBtn");
 function soundUI() {
   sBtn.classList.toggle("on", snd.on); sBtn.classList.toggle("nudge", snd.ready && !snd.on && snd.want);
@@ -928,7 +976,7 @@ function useElement(start) {                                                    
 function rampTo(v, secs) { const t = snd.ctx.currentTime, p = snd.gain.gain; p.cancelScheduledValues(t); p.setValueAtTime(p.value, t); p.linearRampToValueAtTime(v, t + secs); }
 // must run inside the tap / click / key handler itself
 function soundOn() {
-  snd.want = true; try { localStorage.setItem("viluxent-sound", "on"); } catch {}
+  snd.want = true; try { sessionStorage.setItem("viluxent-sound", "on"); } catch {}
   if (snd.data && AC && !snd.el) {
     if (!snd.ctx) snd.ctx = new AC();
     const c = snd.ctx;
@@ -947,7 +995,7 @@ function soundOn() {
   snd.on = true; soundUI();
 }
 function soundOff() {
-  snd.want = false; try { localStorage.setItem("viluxent-sound", "off"); } catch {}
+  snd.want = false; try { sessionStorage.setItem("viluxent-sound", "off"); } catch {}
   if (snd.ctx && snd.gain) rampTo(0, .35); else if (snd.el) snd.el.pause();
   snd.on = false; soundUI();
 }
@@ -963,14 +1011,16 @@ function tryStart(e) {
 }
 const onTouchStart = e => { const p = e.touches[0]; tx = p.clientX; tyS = p.clientY; tt = performance.now(); };
 const onTouchEnd = e => { const p = e.changedTouches[0]; if (Math.hypot(p.clientX - tx, p.clientY - tyS) < 12 && performance.now() - tt < 700) tryStart(e); };
-const onPointerUp = e => { if (e.pointerType === "mouse" || e.pointerType === "pen") tryStart(e); };
+// mouse: press (pointerdown) is what browsers treat as a gesture; click is the universal fallback (Safari)
+const onPointerDown = e => { if (e.pointerType === "mouse" || e.pointerType === "pen") tryStart(e); };
+const onClick = e => tryStart(e);
 const onKey = e => tryStart(e);
 function armGestures() { if (armed) return; armed = true;
   addEventListener("touchstart", onTouchStart, { capture: true, passive: true }); addEventListener("touchend", onTouchEnd, true);
-  addEventListener("pointerup", onPointerUp, true); addEventListener("keydown", onKey, true); }
+  addEventListener("pointerdown", onPointerDown, true); addEventListener("click", onClick, true); addEventListener("keydown", onKey, true); }
 function disarm() { armed = false;
   removeEventListener("touchstart", onTouchStart, true); removeEventListener("touchend", onTouchEnd, true);
-  removeEventListener("pointerup", onPointerUp, true); removeEventListener("keydown", onKey, true); }
+  removeEventListener("pointerdown", onPointerDown, true); removeEventListener("click", onClick, true); removeEventListener("keydown", onKey, true); }
 armGestures();
 // phones suspend audio in the background; pick up again on return (or on the next tap if the phone insists)
 document.addEventListener("visibilitychange", () => {
