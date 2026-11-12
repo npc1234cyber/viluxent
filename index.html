@@ -91,6 +91,8 @@ header{position:fixed;top:0;left:0;right:0;z-index:25;display:flex;justify-conte
 #soundBtn.on .eq i{animation:eq .9s ease-in-out infinite alternate}
 #soundBtn.on .eq i:nth-child(2){animation-delay:-.3s}#soundBtn.on .eq i:nth-child(3){animation-delay:-.6s}#soundBtn.on .eq i:nth-child(4){animation-delay:-.15s}
 @keyframes eq{0%{height:2px}100%{height:9px}}
+#soundBtn.nudge{animation:nudge 1.6s ease-in-out infinite}
+@keyframes nudge{50%{opacity:.35}}
 #prog{position:fixed;top:0;left:0;height:2px;width:0;z-index:26;background:linear-gradient(90deg,var(--gold),#fff);box-shadow:0 0 8px rgba(232,182,76,.6)}
 #railnav{position:fixed;right:calc(var(--gx) + 1px);top:50%;transform:translateY(-50%);z-index:24;display:flex;flex-direction:column;gap:14px;align-items:flex-end;mix-blend-mode:difference;color:#fff}
 #railnav button{display:flex;align-items:center;gap:10px;font-size:10.5px;font-weight:500;letter-spacing:.18em;text-transform:uppercase;opacity:.55;transition:opacity .25s}
@@ -139,7 +141,7 @@ header{position:fixed;top:0;left:0;right:0;z-index:25;display:flex;justify-conte
   #hint{display:none}
   #railnav{display:none}
 }
-@media (prefers-reduced-motion:reduce){#menu,#loader,#toast{transition:none}#soundBtn.on .eq i{animation:none;height:7px}}
+@media (prefers-reduced-motion:reduce){#menu,#loader,#toast{transition:none}#soundBtn.on .eq i{animation:none;height:7px}#soundBtn.nudge{animation:none}}
 </style>
 </head>
 <body>
@@ -535,58 +537,87 @@ Promise.all(['400 40px Anton', '700 18px Doto', '400 20px "JetBrains Mono"', '50
 setTimeout(() => { if (!fontsReady) { fontsReady = true; buildAll(); } }, 6000);   // slow network: draw with fallback fonts
 requestAnimationFrame(frame);
 
-/* ---------- music: starts on the first click or key press, loops seamlessly ---------- */
+/* ---------- music: starts on the first tap, click or key press, loops seamlessly ---------- */
 // the song can sit next to index.html under its original name, or in audio/
 const AUDIO_SRCS = ["Vamp_Anthem.mp3", "vamp-anthem.mp3", "audio/vamp-anthem.mp3"], VOL = .55;
-const snd = { ctx: null, buf: null, src: null, gain: null, an: null, bins: null, el: null, ready: false, on: false, want: true, pending: false, level: 0 };
+const AC = window.AudioContext || window.webkitAudioContext;
+const IOS = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+// iPhones mute Web Audio with the ring/silent switch unless the page asks to play as media (Safari 16.4+);
+// older iPhones without that switch use a plain <audio> element, which the silent switch does not mute
+try { if (navigator.audioSession) navigator.audioSession.type = "playback"; } catch {}
+const USE_EL = !AC || (IOS && !navigator.audioSession);
+const snd = { ctx: null, data: null, buf: null, decoding: false, src: null, gain: null, an: null, bins: null, el: null, ready: false, on: false, want: true, level: 0 };
 try { snd.want = localStorage.getItem("viluxent-sound") !== "off"; } catch {}
 const sBtn = $("#soundBtn");
-function soundUI() { sBtn.classList.toggle("on", snd.on); sBtn.setAttribute("aria-pressed", snd.on);
-  sBtn.setAttribute("aria-label", snd.on ? "Music: on. Click to mute." : "Music: off. Click to play."); }
-function soundReady() { snd.ready = true; sBtn.hidden = false; if (snd.pending) { snd.pending = false; soundOn(); } }
-(async function loadSound() {
-  try {
-    const AC = window.AudioContext || window.webkitAudioContext; if (!AC) throw 0;
-    let r = null; for (const u of AUDIO_SRCS) { try { const q = await fetch(u); if (q.ok) { r = q; break; } } catch {} }
-    if (!r) throw 0; const data = await r.arrayBuffer(); snd.ctx = new AC();
-    snd.buf = await new Promise((ok, no) => snd.ctx.decodeAudioData(data, ok, no));     // callback form works in older Safari too
-    soundReady();
-  } catch {                                                                              // no Web Audio, or fetch blocked: plain looping <audio>
-    if (snd.ctx) { try { snd.ctx.close(); } catch {} snd.ctx = null; }
-    const a = new Audio(); a.loop = true; a.preload = "auto"; a.volume = VOL; let k = 0;
-    a.addEventListener("canplay", () => { if (!snd.ready) { snd.el = a; soundReady(); } }, { once: true });
-    a.addEventListener("error", () => { if (++k < AUDIO_SRCS.length) a.src = AUDIO_SRCS[k]; else sBtn.hidden = true; });   // no file anywhere: no music
-    a.src = AUDIO_SRCS[0];
-  }
+function soundUI() {
+  sBtn.classList.toggle("on", snd.on); sBtn.classList.toggle("nudge", snd.ready && !snd.on && snd.want);
+  sBtn.setAttribute("aria-pressed", snd.on); sBtn.setAttribute("aria-label", snd.on ? "Music: on. Tap to mute." : "Music: off. Tap to play.");
+}
+function soundReady() { snd.ready = true; sBtn.hidden = false; soundUI(); }
+function useElement(start) {                                                       // plain looping <audio>, trying each location
+  const a = new Audio(); a.loop = true; a.preload = "auto"; a.volume = VOL; a.setAttribute("playsinline", ""); let k = 0;
+  a.addEventListener("canplay", () => { if (!snd.el) { snd.el = a; if (!snd.ready) soundReady(); } }, { once: true });
+  a.addEventListener("error", () => { if (++k < AUDIO_SRCS.length) a.src = AUDIO_SRCS[k]; else if (!snd.ready) sBtn.hidden = true; });
+  a.src = AUDIO_SRCS[0]; snd.el = start ? a : null;
+  if (start) a.play().catch(() => { snd.on = false; soundUI(); armGestures(); });
+}
+(async function findSound() {                                                      // only fetch here; nothing audible is created before a tap
+  if (USE_EL) { useElement(false); return; }
+  for (const u of AUDIO_SRCS) { try { const r = await fetch(u); if (r.ok) { snd.data = await r.arrayBuffer(); break; } } catch {} }
+  if (snd.data) soundReady(); else useElement(false);                              // fetch blocked (e.g. opened as a file): fall back
 })();
+function rampTo(v, secs) { const t = snd.ctx.currentTime, p = snd.gain.gain; p.cancelScheduledValues(t); p.setValueAtTime(p.value, t); p.linearRampToValueAtTime(v, t + secs); }
+// must run inside the tap / click / key handler itself
 function soundOn() {
   snd.want = true; try { localStorage.setItem("viluxent-sound", "on"); } catch {}
-  if (!snd.ready) { snd.pending = true; if (snd.ctx) snd.ctx.resume(); return; }
-  if (snd.ctx) {
-    snd.ctx.resume();
-    if (!snd.src) {
-      snd.gain = snd.ctx.createGain(); snd.an = snd.ctx.createAnalyser(); snd.an.fftSize = 256; snd.bins = new Uint8Array(snd.an.frequencyBinCount);
-      snd.src = snd.ctx.createBufferSource(); snd.src.buffer = snd.buf; snd.src.loop = true;
-      snd.src.connect(snd.gain); snd.gain.connect(snd.an); snd.an.connect(snd.ctx.destination); snd.src.start();
-    }
-    const t = snd.ctx.currentTime; snd.gain.gain.cancelScheduledValues(t); snd.gain.gain.setValueAtTime(snd.gain.gain.value, t); snd.gain.gain.linearRampToValueAtTime(VOL, t + 1.2);
-  } else if (snd.el) { snd.el.play().catch(() => { snd.on = false; soundUI(); }); }
+  if (snd.data && AC && !snd.el) {
+    if (!snd.ctx) snd.ctx = new AC();
+    const c = snd.ctx;
+    try { const b = c.createBuffer(1, 1, 22050), s0 = c.createBufferSource(); s0.buffer = b; s0.connect(c.destination); s0.start(0); } catch {}   // unlocks iOS
+    if (c.state !== "running") c.resume().catch(() => {});
+    if (!snd.gain) { snd.gain = c.createGain(); snd.gain.gain.value = 0; snd.an = c.createAnalyser(); snd.an.fftSize = 256; snd.bins = new Uint8Array(snd.an.frequencyBinCount);
+      snd.gain.connect(snd.an); snd.an.connect(c.destination); }
+    const go = () => { if (!snd.want) return;
+      if (!snd.src) { snd.src = c.createBufferSource(); snd.src.buffer = snd.buf; snd.src.loop = true; snd.src.connect(snd.gain); snd.src.start(0); }
+      rampTo(VOL, 1.2); };
+    if (snd.buf) go();
+    else if (!snd.decoding) { snd.decoding = true;
+      c.decodeAudioData(snd.data.slice(0), b => { snd.buf = b; go(); }, () => { snd.data = null; useElement(true); }); }   // undecodable: use <audio>
+  } else if (snd.el) { snd.el.play().catch(() => { snd.on = false; soundUI(); armGestures(); }); }
+  else if (!snd.ready) return;
   snd.on = true; soundUI();
 }
 function soundOff() {
-  snd.want = false; snd.pending = false; try { localStorage.setItem("viluxent-sound", "off"); } catch {}
-  if (snd.ctx && snd.gain) { const t = snd.ctx.currentTime; snd.gain.gain.cancelScheduledValues(t); snd.gain.gain.setValueAtTime(snd.gain.gain.value, t); snd.gain.gain.linearRampToValueAtTime(0, t + .35); }
-  else if (snd.el) snd.el.pause();
+  snd.want = false; try { localStorage.setItem("viluxent-sound", "off"); } catch {}
+  if (snd.ctx && snd.gain) rampTo(0, .35); else if (snd.el) snd.el.pause();
   snd.on = false; soundUI();
 }
-sBtn.addEventListener("click", () => snd.on || snd.pending ? soundOff() : soundOn());
-// the first real interaction anywhere (click, tap or key) starts the music, unless the visitor muted it before
-function firstGesture(e) {
-  if (sBtn.contains(e.target)) return;                                                   // the toggle handles itself
-  ["pointerup", "touchend", "keydown"].forEach(t => removeEventListener(t, firstGesture, true));
-  if (snd.want && !snd.on) soundOn();
+const playing = () => snd.el ? !snd.el.paused : !!(snd.ctx && snd.ctx.state === "running");
+sBtn.addEventListener("click", () => snd.on ? soundOff() : soundOn());
+// start on the first real tap, click or key press. A swipe does not count as a tap for the browser,
+// so keep listening until the music is actually playing.
+let tx = 0, tyS = 0, tt = 0, armed = false;
+function tryStart(e) {
+  if (!snd.want || snd.on || sBtn.contains(e.target)) return;
+  soundOn();
+  setTimeout(() => { if (playing()) disarm(); else if (snd.on) { snd.on = false; soundUI(); } }, 400);
 }
-["pointerup", "touchend", "keydown"].forEach(t => addEventListener(t, firstGesture, true));
+const onTouchStart = e => { const p = e.touches[0]; tx = p.clientX; tyS = p.clientY; tt = performance.now(); };
+const onTouchEnd = e => { const p = e.changedTouches[0]; if (Math.hypot(p.clientX - tx, p.clientY - tyS) < 12 && performance.now() - tt < 700) tryStart(e); };
+const onPointerUp = e => { if (e.pointerType === "mouse" || e.pointerType === "pen") tryStart(e); };
+const onKey = e => tryStart(e);
+function armGestures() { if (armed) return; armed = true;
+  addEventListener("touchstart", onTouchStart, { capture: true, passive: true }); addEventListener("touchend", onTouchEnd, true);
+  addEventListener("pointerup", onPointerUp, true); addEventListener("keydown", onKey, true); }
+function disarm() { armed = false;
+  removeEventListener("touchstart", onTouchStart, true); removeEventListener("touchend", onTouchEnd, true);
+  removeEventListener("pointerup", onPointerUp, true); removeEventListener("keydown", onKey, true); }
+armGestures();
+// phones suspend audio in the background; pick up again on return (or on the next tap if the phone insists)
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState !== "visible" || !snd.on || !snd.ctx || snd.ctx.state === "running") return;
+  snd.ctx.resume().then(() => { if (snd.ctx.state !== "running") { snd.on = false; soundUI(); armGestures(); } }, () => { snd.on = false; soundUI(); armGestures(); });
+});
 function soundLevel() {                                                                  // smoothed bass level, 0..1, for the visuals
   if (!snd.on || !snd.an) { snd.level *= .9; return snd.level; }
   snd.an.getByteFrequencyData(snd.bins); let b = 0; for (let i = 1; i < 7; i++) b += snd.bins[i];
