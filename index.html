@@ -93,6 +93,81 @@ header{position:fixed;top:0;left:0;right:0;z-index:25;display:flex;justify-conte
 @keyframes eq{0%{height:2px}100%{height:9px}}
 #soundBtn.nudge{animation:nudge 1.6s ease-in-out infinite}
 @keyframes nudge{50%{opacity:.35}}
+
+/* resources dossier: a readable sheet over the tube */
+#dossier{position:fixed;inset:0;z-index:55;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;color:#dfe9ea;
+  background:linear-gradient(rgba(230,242,243,.035) 1px,transparent 1px) 0 0/100% 32px,linear-gradient(90deg,rgba(230,242,243,.035) 1px,transparent 1px) 0 0/32px 100%,#06080a;
+  opacity:0;visibility:hidden;transform:translateY(14px);transition:opacity .35s,transform .35s,visibility 0s linear .35s}
+#dossier.open{opacity:1;visibility:visible;transform:none;transition-delay:0s}
+.dos-bar{position:sticky;top:0;z-index:2;display:flex;justify-content:space-between;align-items:center;padding:calc(18px + env(safe-area-inset-top,0px)) var(--gx) 16px;background:rgba(6,8,10,.9);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);border-bottom:1px solid rgba(230,242,243,.08);font-size:12px;font-weight:500;letter-spacing:.16em}
+.dos-bar>span{font-family:var(--dot);font-weight:900;font-size:var(--t1);letter-spacing:.02em}
+.dos-x{font-size:12px;font-weight:500;letter-spacing:.16em;color:var(--phos)}
+.dos-in{max-width:1120px;margin:0 auto;padding:0 var(--gx) calc(80px + env(safe-area-inset-bottom,0px))}
+.dos-k{font-size:12px;font-weight:500;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:18px}
+.dos-hero{padding:72px 0 56px;border-bottom:1px solid rgba(230,242,243,.08)}
+.dos-hero h2{font-family:var(--dot);font-weight:900;font-size:clamp(30px,5vw,58px);line-height:1.02;color:#fff;max-width:18ch;text-wrap:balance}
+.dos-lede{margin-top:22px;max-width:62ch;font-size:16px;line-height:1.65;color:#c8d4d5}
+.dos-facts{list-style:none;display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1px;margin-top:40px;background:rgba(230,242,243,.08);border:1px solid rgba(230,242,243,.08)}
+.dos-facts li{background:#06080a;padding:18px 20px;display:grid;gap:6px}
+.dos-facts b{font-family:var(--dot);font-weight:900;font-size:var(--t5);line-height:1;color:#fff;font-variant-numeric:tabular-nums}
+.dos-facts span{font-size:12px;letter-spacing:.06em;color:#93a1a3}
+.dos-sec{padding:56px 0;border-bottom:1px solid rgba(230,242,243,.08)}
+.dos-head{display:grid;grid-template-columns:auto 1fr;gap:6px 24px;align-items:start;margin-bottom:28px}
+.dos-n{font-size:12px;font-weight:500;letter-spacing:.16em;color:var(--gold);padding-top:8px}
+.dos-head h3{font-family:var(--dot);font-weight:900;font-size:var(--t4);line-height:1.05;color:#fff}
+.dos-head p{margin-top:10px;max-width:62ch;font-size:14.5px;line-height:1.65;color:#b9c6c7}
+.sets{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,470px),1fr));gap:24px}
+.set{border:1px solid rgba(230,242,243,.1);border-radius:6px;padding:24px;background:rgba(255,255,255,.015);min-width:0}
+.set.deluxe{border-top:3px solid #2f6fd6}.set.doomsday{border-top:3px solid #d6a54a}
+.set-top{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}
+.set h4{font-family:var(--poster);font-weight:400;font-size:var(--t4);letter-spacing:.02em;text-transform:uppercase;color:#fff}
+.set.deluxe h4{color:#7fb0ff}.set.doomsday h4{color:#e8bd63}
+.set h4 small{font-family:var(--mono);font-size:12px;letter-spacing:.14em;color:#93a1a3;margin-left:8px}
+.tag{font-size:11px;font-weight:500;letter-spacing:.14em;text-transform:uppercase;border:1px solid currentColor;border-radius:99px;padding:3px 10px}
+.deluxe .tag{color:#7fb0ff}.doomsday .tag{color:#e8bd63}
+.set>p{margin-top:12px;font-size:14px;line-height:1.65;color:#c3cfd0}
+.papers{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:20px}
+.paper{display:grid;gap:12px;padding:12px;border:1px solid rgba(230,242,243,.1);border-radius:4px;background:rgba(0,0,0,.25);transition:border-color .2s,transform .2s;min-width:0}
+.paper:hover,.paper:focus-visible{border-color:rgba(230,242,243,.45);transform:translateY(-2px)}
+.paper img{display:block;width:100%;height:auto;aspect-ratio:320/452;object-fit:cover;border-radius:2px;box-shadow:0 10px 30px rgba(0,0,0,.45)}
+.pm{display:grid;gap:3px;font-size:12px;color:#93a1a3}
+.pm b{font-size:14px;font-weight:700;color:#fff}
+.pm em{font-style:normal;font-size:11px;letter-spacing:.04em}
+.pm i{font-style:normal;margin-top:6px;font-size:12px;font-weight:700;letter-spacing:.06em;color:#fff}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:16px}
+.card{display:grid;gap:8px;align-content:start;border:1px solid rgba(230,242,243,.1);border-radius:6px;padding:22px;background:rgba(255,255,255,.015)}
+.card b{font-size:15px;color:#fff}
+.card span{font-size:14px;line-height:1.6;color:#b9c6c7}
+.card.manual{grid-template-columns:1fr auto;align-items:center;gap:6px 24px}
+.card.manual b{grid-column:1}.card.manual span{grid-column:1}.card.manual .btn{grid-column:2;grid-row:1/3}
+.unis{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,250px),1fr));gap:16px}
+.uni{border:1px solid rgba(230,242,243,.1);border-radius:6px;padding:22px;background:rgba(255,255,255,.015)}
+.uni h4{font-family:var(--dot);font-weight:900;font-size:var(--t3);color:#fff;margin-bottom:12px}
+.uni ul{list-style:none;display:grid;gap:9px;font-size:14px;line-height:1.45;color:#c8d4d5}
+.uni li{padding-left:16px;position:relative}
+.uni li:before{content:"";position:absolute;left:0;top:.6em;width:6px;height:6px;background:var(--gold)}
+.uni abbr{text-decoration:none;color:#93a1a3}
+.btn{display:inline-block;background:#fff;color:#05080e;padding:10px 18px;border-radius:99px;font-size:12.5px;font-weight:700;letter-spacing:.06em;text-transform:none;transition:transform .2s,box-shadow .2s;white-space:nowrap}
+.btn:hover,.btn:focus-visible{transform:translateY(-1px);box-shadow:0 6px 24px rgba(160,210,255,.35)}
+.btn.big{padding:14px 24px;font-size:14px}
+.btn.ghost{background:transparent;color:#fff;border:1px solid rgba(255,255,255,.55)}
+.pill{border:1px solid rgba(230,242,243,.45);padding:3px 12px;border-radius:99px;font-size:11px;font-weight:500;letter-spacing:.12em}
+.dos-cta{padding:64px 0 24px}
+.dos-cta h3{font-family:var(--dot);font-weight:900;font-size:clamp(28.8px,4.4vw,46.6px);line-height:1.05;color:#fff}
+.dos-cta>p{margin-top:12px;max-width:60ch;font-size:15px;line-height:1.6;color:#c3cfd0}
+.dos-row{display:flex;flex-wrap:wrap;align-items:center;gap:14px 20px;margin-top:26px}
+.did{font-size:12px;letter-spacing:.06em;color:#93a1a3}.did code{font-family:var(--mono);color:#dfe9ea;user-select:all}
+.fine{margin-top:40px;font-size:11.5px;letter-spacing:.04em;color:#6f7d7f}
+#work .dl{display:inline-block;margin-top:14px;font-size:12px;font-weight:700;letter-spacing:.06em;color:var(--studio);border-bottom:1px solid currentColor;padding-bottom:2px}
+@media (max-width:760px){
+  .dos-hero{padding:44px 0 36px}
+  .dos-head{grid-template-columns:1fr}
+  .dos-n{padding-top:0}
+  .set{padding:16px}
+  .papers{gap:10px}
+  .card.manual{grid-template-columns:1fr}.card.manual .btn{grid-column:1;grid-row:auto;justify-self:start;margin-top:8px}
+}
+@media (prefers-reduced-motion:reduce){#dossier{transition:none;transform:none}.paper,.btn{transition:none}}
 #prog{position:fixed;top:0;left:0;height:2px;width:0;z-index:26;background:linear-gradient(90deg,var(--gold),#fff);box-shadow:0 0 8px rgba(232,182,76,.6)}
 #railnav{position:fixed;right:calc(var(--gx) + 1px);top:50%;transform:translateY(-50%);z-index:24;display:flex;flex-direction:column;gap:14px;align-items:flex-end;mix-blend-mode:difference;color:#fff}
 #railnav button{display:flex;align-items:center;gap:10px;font-size:10.5px;font-weight:500;letter-spacing:.18em;text-transform:uppercase;opacity:.55;transition:opacity .25s}
@@ -156,7 +231,7 @@ header{position:fixed;top:0;left:0;right:0;z-index:25;display:flex;justify-conte
   <button class="brand sh" data-go="0" aria-label="Viluxent, back to start">VILUXENT<span class="qed" aria-hidden="true"></span></button>
   <nav class="hnav">
     <button id="soundBtn" type="button" aria-pressed="false" aria-label="Music: off. Click to play." hidden>SOUND<span class="eq" aria-hidden="true"><i></i><i></i><i></i><i></i></span></button>
-    <button data-go="23">LET’S TALK<span class="dotg"></span></button>
+    <button data-dossier="">RESOURCES<span class="dotg"></span></button>
     <button id="menuBtn" aria-expanded="false" aria-controls="menu">MENU<span class="burger"></span></button>
   </nav>
 </header>
@@ -164,7 +239,7 @@ header{position:fixed;top:0;left:0;right:0;z-index:25;display:flex;justify-conte
 <div class="ui" id="heroL"><h1 class="sh">VILUXENT</h1><div class="meta"><span>// TMUA 9.0</span><span><span class="m">φ</span> = 1.6180…</span></div></div>
 <p class="ui" id="heroR"><b>9.0 / 9.0</b>TMUA holder. I write the mocks I wish I’d had, and 14 students have now taken them to a 9.0.</p>
 <div class="ui" id="heroCap">Vogel’s sunflower · <span id="seedN">1600</span> seeds · golden angle 137.5077°</div>
-<div class="ui" id="work"><h2>THE PAPERS</h2><ol id="workList"></ol></div>
+<div class="ui" id="work"><h2>THE PAPERS</h2><ol id="workList"></ol><button class="dl" data-dossier="dosPapers">Download them free →</button></div>
 <div class="ui panel" id="about"><span class="rail"></span><h2>ABOUT ME</h2>
   <p class="lead">I scored 9.0 on the TMUA. Then I wrote the papers I wished I’d had.</p>
   <p>Hard, fair, and checked line by line. Fourteen students have since taken them all the way to a 9.0.</p>
@@ -173,12 +248,13 @@ header{position:fixed;top:0;left:0;right:0;z-index:25;display:flex;justify-conte
 <div class="ui panel" id="who"><span class="rail"></span><h2>WHO I WRITE FOR</h2>
   <p class="lead">Anyone aiming for a 9.0.</p>
   <p>Students sitting the TMUA for maths, computer science or economics, at universities such as Cambridge, Imperial, LSE, Warwick, Durham and UCL.</p>
+  <p>I also run mock interviews for Cambridge, Oxford and Imperial.</p>
   <p class="note">Below: the Mandelbrot set, one rule all the way down, <span class="m">z ↦ z² + c</span>.</p>
   <button class="more" data-go="23">&gt; JOIN THE DISCORD</button></div>
 <div class="ui" id="outro">
   <div><div class="cta">FIND ME ON DISCORD</div>
     <div class="stat">9.0 TMUA · 14 students to 9.0 · community-made</div>
-    <div class="id"><a id="dlink" class="btn" target="_blank" rel="noopener">Message me on Discord →</a><span>ID <code id="did"></code></span><button id="copy" type="button">COPY ID</button></div></div>
+    <div class="id"><a id="dlink" class="btn" target="_blank" rel="noopener">Message me on Discord →</a><button class="btn ghost" data-dossier="">Resources &amp; services</button><span>ID <code id="did"></code></span><button id="copy" type="button">COPY ID</button></div></div>
   <div class="credit">Independent · not affiliated with UAT-UK</div>
 </div>
 <div class="ui" id="hint">SCROLL ↓</div>
@@ -188,9 +264,87 @@ header{position:fixed;top:0;left:0;right:0;z-index:25;display:flex;justify-conte
   <button data-go="2"><span>Papers</span><i></i></button>
   <button data-go="9"><span>About</span><i></i></button>
   <button data-go="18.6"><span>Who it’s for</span><i></i></button>
+  <button data-dossier=""><span>Resources</span><i></i></button>
   <button data-go="23"><span>Contact</span><i></i></button>
 </nav>
 <div id="toast" role="status" aria-live="polite"></div>
+
+<section id="dossier" role="dialog" aria-modal="true" aria-labelledby="dosTitle" aria-hidden="true">
+  <div class="dos-bar"><span>VILUXENT<span class="qed" aria-hidden="true"></span> &nbsp;/&nbsp; RESOURCES</span><button class="dos-x" id="dosClose" type="button">CLOSE ✕</button></div>
+  <div class="dos-in">
+    <div class="dos-hero">
+      <p class="dos-k">Resources &amp; services</p>
+      <h2 id="dosTitle">Everything I used to score 9.0. Everything I’ve built since.</h2>
+      <p class="dos-lede">I sat the TMUA and scored 9.0 out of 9.0. Then I wrote the papers I wished I’d had, and fourteen students have since used them to reach 9.0 themselves. The papers below are free. Everything else starts with one message on Discord.</p>
+      <ul class="dos-facts">
+        <li><b>9.0</b><span>my TMUA score</span></li>
+        <li><b>14</b><span>students to 9.0</span></li>
+        <li><b>80</b><span>original questions, free below</span></li>
+        <li><b>3</b><span>universities for mock interviews</span></li>
+      </ul>
+    </div>
+
+    <section class="dos-sec" id="dosPapers" aria-labelledby="hPapers">
+      <div class="dos-head"><span class="dos-n">01</span><div><h3 id="hPapers">Free papers</h3>
+        <p>Twenty questions, seventy-five minutes, no calculator. Every paper ends with full worked solutions and an answer key, and every question stays inside the TMUA specification.</p></div></div>
+      <div class="sets">
+        <article class="set deluxe">
+          <div class="set-top"><h4>Deluxe <small>Set 1</small></h4><span class="tag">Realistic</span></div>
+          <p>A prediction paper built from the 2024, 2025 and 2026 TMUA papers: their topic spread, their option counts, their terse stems. Mark it against the conversion table inside and your raw mark becomes an honest estimate on the 1.0 to 9.0 scale.</p>
+          <div class="papers">
+            <a class="paper" href="papers/Deluxe_Set1_Paper1.pdf" target="_blank" rel="noopener"><img src="papers/Deluxe_Set1_Paper1-cover.jpg" alt="Cover of Deluxe Set 1, Paper 1" width="320" height="452" loading="lazy"><span class="pm"><b>Paper 1</b><span>Applications of Mathematical Knowledge</span><em>37 pages · PDF · 135 KB</em><i>Open PDF ↗</i></span></a>
+            <a class="paper" href="papers/Deluxe_Set1_Paper2.pdf" target="_blank" rel="noopener"><img src="papers/Deluxe_Set1_Paper2-cover.jpg" alt="Cover of Deluxe Set 1, Paper 2" width="320" height="452" loading="lazy"><span class="pm"><b>Paper 2</b><span>Mathematical Reasoning</span><em>36 pages · PDF · 129 KB</em><i>Open PDF ↗</i></span></a>
+          </div>
+        </article>
+        <article class="set doomsday">
+          <div class="set-top"><h4>Doomsday <small>Set 1</small></h4><span class="tag">Hardest possible</span></div>
+          <p>The hardest a TMUA can get. Every question is calibrated beyond an official Question 20 and still sits inside the specification, and none can be cracked by substituting values or working back from the options. Ten out of twenty is an outstanding score.</p>
+          <div class="papers">
+            <a class="paper" href="papers/Doomsday_Set1_Paper1.pdf" target="_blank" rel="noopener"><img src="papers/Doomsday_Set1_Paper1-cover.jpg" alt="Cover of Doomsday Set 1, Paper 1" width="320" height="452" loading="lazy"><span class="pm"><b>Paper 1</b><span>Applications of Mathematical Knowledge</span><em>36 pages · PDF · 187 KB</em><i>Open PDF ↗</i></span></a>
+            <a class="paper" href="papers/Doomsday_Set1_Paper2.pdf" target="_blank" rel="noopener"><img src="papers/Doomsday_Set1_Paper2-cover.jpg" alt="Cover of Doomsday Set 1, Paper 2" width="320" height="452" loading="lazy"><span class="pm"><b>Paper 2</b><span>Mathematical Reasoning</span><em>34 pages · PDF · 173 KB</em><i>Open PDF ↗</i></span></a>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="dos-sec" id="dosManual" aria-labelledby="hManual">
+      <div class="dos-head"><span class="dos-n">02</span><div><h3 id="hManual">The 9.0 Manual</h3>
+        <p>My guide to getting a 9.0, written by someone who got one. It’s free: message me on Discord and I’ll send it over.</p></div></div>
+      <div class="cards one"><div class="card manual"><b>Free guide</b><span>How to get a 9.0 on the TMUA</span><a class="btn" href="https://discord.com/users/844819535500804167" target="_blank" rel="noopener">Ask for the manual on Discord →</a></div></div>
+    </section>
+
+    <section class="dos-sec" id="dosInterviews" aria-labelledby="hInterviews">
+      <div class="dos-head"><span class="dos-n">03</span><div><h3 id="hInterviews">Mock interviews</h3>
+        <p>Interview practice run like the real thing: unseen questions, thinking out loud, and honest feedback afterwards.</p></div></div>
+      <div class="unis">
+        <div class="uni"><h4>Cambridge</h4><ul><li>Mathematics</li><li>Economics</li><li>Computer Science</li><li>Land Economy</li></ul></div>
+        <div class="uni"><h4>Oxford</h4><ul><li>Mathematics</li><li>Computer Science</li><li>Economics and Management <abbr title="Economics and Management">(E&amp;M)</abbr></li><li>Philosophy, Politics and Economics <abbr title="Philosophy, Politics and Economics">(PPE)</abbr></li></ul></div>
+        <div class="uni"><h4>Imperial</h4><ul><li>Mathematics</li><li>Mathematics and Computer Science <abbr title="Joint Mathematics and Computing">(JMC)</abbr></li><li>Economics, Finance and Data Science <abbr title="Economics, Finance and Data Science">(EFDS)</abbr></li><li>Computing</li></ul></div>
+      </div>
+    </section>
+
+    <section class="dos-sec" id="dosTutoring" aria-labelledby="hTutoring">
+      <div class="dos-head"><span class="dos-n">04</span><div><h3 id="hTutoring">TMUA tutoring</h3>
+        <p>Taught by a 9.0 scorer, focused on the questions that are costing you marks.</p></div></div>
+      <div class="cards">
+        <div class="card"><b>One-to-one sessions</b><span>Just you and the paper: your weakest topics, your mistakes, your pace.</span></div>
+        <div class="card"><b>Group sessions</b><span>Work through TMUA problems with other applicants aiming for the same 9.0.</span></div>
+      </div>
+    </section>
+
+    <section class="dos-sec" id="dosCustom" aria-labelledby="hCustom">
+      <div class="dos-head"><span class="dos-n">05</span><div><h3 id="hCustom">Papers made for you</h3>
+        <p>Community papers designed around your weak topics and the difficulty you need, plus the rest of my realistic community papers, available to buy.</p></div></div>
+    </section>
+
+    <section class="dos-cta" aria-labelledby="hCta">
+      <h3 id="hCta">Everything starts with a DM.</h3>
+      <p>Mock interviews, sessions, custom papers or the 9.0 Manual: message me on Discord and say what you need.</p>
+      <div class="dos-row"><a class="btn big" href="https://discord.com/users/844819535500804167" target="_blank" rel="noopener">Message me on Discord →</a><span class="did">Discord ID <code id="did2">844819535500804167</code></span><button class="pill" id="copy2" type="button">COPY ID</button></div>
+      <p class="fine">Independent. Not affiliated with UAT-UK, the University of Cambridge, the University of Oxford or Imperial College London.</p>
+    </section>
+  </div>
+</section>
 
 <nav id="menu" aria-label="Site">
   <button class="x" id="menuClose">CLOSE ✕</button>
@@ -198,8 +352,9 @@ header{position:fixed;top:0;left:0;right:0;z-index:25;display:flex;justify-conte
   <button class="it" data-go="2"><span>[1]</span>Papers</button>
   <button class="it" data-go="9"><span>[2]</span>About</button>
   <button class="it" data-go="18.6"><span>[3]</span>Who it’s for</button>
-  <button class="it" data-go="23"><span>[5]</span>Discord</button>
-  <div class="credit">Numbered 1, 1, 2, 3, 5 · F<sub>n+1</sub> / F<sub>n</sub> → φ</div>
+  <button class="it" data-dossier=""><span>[5]</span>Resources</button>
+  <button class="it" data-go="23"><span>[8]</span>Discord</button>
+  <div class="credit">Numbered 1, 1, 2, 3, 5, 8 · F<sub>n+1</sub> / F<sub>n</sub> → φ</div>
 </nav>
 
 <div class="glass scan"></div><div class="glass tube"></div><canvas id="grain"></canvas>
@@ -213,10 +368,10 @@ header{position:fixed;top:0;left:0;right:0;z-index:25;display:flex;justify-conte
 const CONTENT = {
   discord: { url: "https://discord.com/users/844819535500804167", id: "844819535500804167" },
   papers: [
-    { label: "[01] SET 1 · PAPER 1", after: "after Euler" },
-    { label: "[02] SET 1 · PAPER 2", after: "after Euclid" },
-    { label: "[03] LOGIC FIELD GUIDE", after: "after De Morgan & Boole" },
-    { label: "[04] LIVE WALKTHROUGHS", after: "after Lorenz" }
+    { label: "[01] DELUXE · PAPER 1", after: "realistic · after Euler" },
+    { label: "[02] DELUXE · PAPER 2", after: "realistic · after Euclid" },
+    { label: "[03] THE 9.0 MANUAL", after: "free guide · after De Morgan" },
+    { label: "[04] DOOMSDAY · SET 1", after: "hardest possible · after Lorenz" }
   ]
 };
 
@@ -225,11 +380,12 @@ const C = CONTENT, PHI = (1 + Math.sqrt(5)) / 2, GOLDEN_ANGLE = Math.PI * (3 - M
 $("#workList").innerHTML = C.papers.map((p, i) => `<li tabindex="0" data-i="${i}">${p.label}<small>${p.after}</small></li>`).join("");
 $("#dlink").href = C.discord.url; $("#did").textContent = C.discord.id;
 $("#sr").innerHTML = `<h1>Viluxent</h1><p>9.0 TMUA holder writing free, community-made TMUA mock papers and guides. 14 students have taken them to a 9.0.</p>
-  <h2>The papers</h2><ul><li>Set 1, Paper 1: Applications of Mathematical Knowledge, 20 questions, 75 minutes</li><li>Set 1, Paper 2: Mathematical Reasoning, 20 questions, 75 minutes</li><li>Logic field guide</li><li>Live walkthroughs on Discord</li></ul>
+  <h2>The papers</h2><ul><li>Deluxe Set 1, Papers 1 and 2: realistic, free PDFs</li><li>Doomsday Set 1, Papers 1 and 2: the hardest possible TMUA, free PDFs</li><li>The 9.0 Manual: free, on request on Discord</li></ul><p>Also: mock interviews for Cambridge, Oxford and Imperial, one-to-one and group TMUA sessions, and custom papers. See Resources.</p>
   <h2>Contact</h2><p><a href="${C.discord.url}">Discord profile</a> (ID ${C.discord.id})</p>`;
 const toast = msg => { const t = $("#toast"); t.textContent = msg; t.classList.add("on"); clearTimeout(toast.h); toast.h = setTimeout(() => t.classList.remove("on"), 3600); };
-$("#copy").onclick = e => { const b = e.currentTarget, sel = () => { const r = document.createRange(); r.selectNodeContents($("#did")); const s = getSelection(); s.removeAllRanges(); s.addRange(r); b.textContent = "SELECTED"; };
-  try { navigator.clipboard.writeText(C.discord.id).then(() => b.textContent = "COPIED", sel); } catch { sel(); } };
+function bindCopy(btn, code) { btn.onclick = () => { const sel = () => { const r = document.createRange(); r.selectNodeContents(code); const s = getSelection(); s.removeAllRanges(); s.addRange(r); btn.textContent = "SELECTED"; };
+  try { navigator.clipboard.writeText(C.discord.id).then(() => btn.textContent = "COPIED", sel); } catch { sel(); } }; }
+bindCopy($("#copy"), $("#did")); bindCopy($("#copy2"), $("#did2"));
 
 /* deterministic randomness for artwork */
 let seed = 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
@@ -240,16 +396,17 @@ let S = 0, ST = 0, entered = false, mob = innerWidth < 760;
 const smax = () => 27;
 const clampS = v => Math.max(0, Math.min(smax(), v));
 const menu = $("#menu"), mb = $("#menuBtn"), menuOpen = () => menu.classList.contains("open");
-addEventListener("wheel", e => { if (!entered || menuOpen()) return; e.preventDefault(); ST = clampS(ST + e.deltaY / (e.deltaMode === 1 ? 12 : e.deltaMode === 2 ? 1 : 500)); }, { passive: false });
+addEventListener("wheel", e => { if (!entered || menuOpen() || dosOpen()) return; e.preventDefault(); ST = clampS(ST + e.deltaY / (e.deltaMode === 1 ? 12 : e.deltaMode === 2 ? 1 : 500)); }, { passive: false });
 let ty = null;
+const dosOpen = () => document.getElementById("dossier").classList.contains("open");
 addEventListener("touchstart", e => { ty = e.touches[0].clientY; }, { passive: true });
-addEventListener("touchmove", e => { if (ty == null || !entered || menuOpen()) return; const y = e.touches[0].clientY; ST = clampS(ST + (ty - y) / 230); ty = y; }, { passive: true });
+addEventListener("touchmove", e => { if (ty == null || !entered || menuOpen() || dosOpen()) return; const y = e.touches[0].clientY; ST = clampS(ST + (ty - y) / 230); ty = y; }, { passive: true });
 addEventListener("touchend", () => { ty = null; }, { passive: true });
 let keys = "";
 addEventListener("keydown", e => {
-  if (e.key === "Escape") { setMenu(false); return; }
+  if (e.key === "Escape") { if (dosOpen()) setDossier(false); else setMenu(false); return; }
   if (/^[0-9]$/.test(e.key)) { keys = (keys + e.key).slice(-4); if (keys === "1729") toast("1729 = 1³ + 12³ = 9³ + 10³ · the Hardy–Ramanujan taxicab number"); }
-  if (menuOpen() || !entered) return;
+  if (menuOpen() || dosOpen() || !entered) return;
   const k = { ArrowDown: 1, PageDown: 1, " ": 1, ArrowUp: -1, PageUp: -1 }[e.key];
   if (k && !(e.key === " " && e.target.closest && e.target.closest("button,a"))) { e.preventDefault(); ST = clampS(Math.round(ST) + k); }
   if (e.key === "Home") ST = 0; if (e.key === "End") ST = smax(); });
@@ -258,6 +415,27 @@ $$("[data-go]").forEach(b => b.addEventListener("click", () => go(b.dataset.go))
 let SLOTS = [2, 3.6, 5.45, 6.25], CORR = 7.25; const MANDEL = 15.6;
 const setTimeline = () => { SLOTS = mob ? [2.4, 4, 5.4, 6.35] : [2, 3.6, 5.45, 6.25]; CORR = mob ? 7.35 : 7.25; };
 $$("#workList li").forEach(li => { const f = () => go(SLOTS[+li.dataset.i]); li.onclick = f; li.onkeydown = e => { if (e.key === "Enter") f(); }; });
+
+/* ---------- resources dossier ---------- */
+const dos = $("#dossier"); let dosReturn = null;
+function setDossier(o, section) {
+  if (o === dosOpen()) { if (o && section) { const el = document.getElementById(section); if (el) el.scrollIntoView(); } return; }
+  dos.classList.toggle("open", o); dos.setAttribute("aria-hidden", String(!o));
+  if (o) { setMenu(false); dosReturn = document.activeElement; dos.scrollTop = 0;
+    if (section) { const el = document.getElementById(section); if (el) el.scrollIntoView(); }
+    $("#dosClose").focus({ preventScroll: true });
+    try { history.replaceState(null, "", "#resources"); } catch {} }
+  else { try { history.replaceState(null, "", location.pathname + location.search); } catch {}
+    if (dosReturn && dosReturn.focus && document.contains(dosReturn)) dosReturn.focus({ preventScroll: true }); }
+}
+$$("[data-dossier]").forEach(b => b.addEventListener("click", () => setDossier(true, b.dataset.dossier)));
+$("#dosClose").onclick = () => setDossier(false);
+dos.addEventListener("keydown", e => {                                  // keep Tab inside the open sheet
+  if (e.key !== "Tab") return; const f = [...dos.querySelectorAll("a[href],button")].filter(el => el.offsetParent !== null);
+  if (!f.length) return; const first = f[0], last = f[f.length - 1];
+  if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); } else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); } });
+addEventListener("hashchange", () => setDossier(location.hash === "#resources"));
+if (location.hash === "#resources") setTimeout(() => setDossier(true), 0);
 
 /* ---------- menu ---------- */
 function setMenu(o) { menu.classList.toggle("open", o); mb.setAttribute("aria-expanded", o); if (o) $("#menuClose").focus(); }
@@ -308,19 +486,19 @@ function buildScreens() {
   // 1 · Euler — Paper 1 (static layer; the unit circle is drawn live on top)
   { const [c, x] = mk(w, h); const gr = x.createLinearGradient(0, 0, 0, h); gr.addColorStop(0, "#0a1fd6"); gr.addColorStop(.5, "#1656ee"); gr.addColorStop(1, "#62d6ff");
     x.fillStyle = gr; x.fillRect(0, 0, w, h);
-    txt(x, "SET 1 · PAPER 1", 44, 52, "700 18px Doto, monospace", "#dfeaff");
+    txt(x, "DELUXE · SET 1 · PAPER 1", 44, 52, "700 18px Doto, monospace", "#dfeaff");
     txt(x, "APPLICATIONS OF MATHEMATICAL KNOWLEDGE", 44, 76, "500 14px \"JetBrains Mono\", monospace", "#bcd2ff");
     x.font = `italic 400 128px ${MATH}`; x.fillStyle = "#fff"; x.fillText("e", 44, 250); let ex = 44 + x.measureText("e").width;
     x.font = `italic 400 72px ${MATH}`; x.fillText("iπ", ex + 4, 180); ex += x.measureText("iπ").width + 12;
     x.font = `400 128px ${MATH}`; x.fillText("+ 1 = 0", ex, 250);
     ["Twenty questions. Seventy-five minutes.", "Algebra, functions, calculus, geometry:", "the five constants of maths in one line,", "and the whole paper in one sitting."].forEach((l, i) => txt(x, l, 48, 330 + i * 27, "400 21px \"JetBrains Mono\", monospace", "#eaf2ff"));
-    txt(x, "20 QUESTIONS · 75 MINUTES", 48, h - 44, "700 15px Doto, monospace", "#ffffff");
+    txt(x, "REALISTIC · FREE PDF", 48, h - 44, "700 15px Doto, monospace", "#ffffff");
     txt(x, "after Euler", w - 44, h - 44, `italic 400 22px ${MATH}`, "#ffffff", "right");
     SCR.push(c); }
   // 2 · Euclid — Paper 2
   { const [c, x] = mk(w, h); const gr = x.createLinearGradient(0, 0, w, h); gr.addColorStop(0, "#c4c7c7"); gr.addColorStop(1, "#8f9494");
     x.fillStyle = gr; x.fillRect(0, 0, w, h);
-    txt(x, "SET 1 · PAPER 2", 44, 52, "800 18px Doto, monospace", "#111");
+    txt(x, "DELUXE · SET 1 · PAPER 2", 44, 52, "800 18px Doto, monospace", "#111");
     txt(x, "MATHEMATICAL REASONING", 44, 76, "500 14px \"JetBrains Mono\", monospace", "#333");
     txt(x, "IF, THEN,", 40, 210, "400 112px Anton, Impact, sans-serif", "#fff"); txt(x, "THEREFORE", 40, 324, "400 112px Anton, Impact, sans-serif", "#fff");
     const proof = ["Take any finite list of primes p₁, …, pₙ.", "Let N = p₁p₂⋯pₙ + 1.", "Dividing N by any pᵢ leaves remainder 1,", "so every prime factor of N is new.", "No finite list holds every prime."];
@@ -332,8 +510,8 @@ function buildScreens() {
     SCR.push(c); }
   // 3 · De Morgan & Boole — logic guide
   { const [c, x] = mk(w, h); x.fillStyle = "#0b0b0b"; x.fillRect(0, 0, w, h);
-    txt(x, "FIELD GUIDE", 30, 36, "700 15px Doto, monospace", "#fff"); txt(x, "PAPER 2 COMPANION", w - 30, 36, "700 15px Doto, monospace", "#fff", "right");
-    txt(x, "LOGIC GUIDE", 24, 178, "400 150px Anton, Impact, sans-serif", "#fff");
+    txt(x, "FREE GUIDE", 30, 36, "700 15px Doto, monospace", "#fff"); txt(x, "ASK ON DISCORD", w - 30, 36, "700 15px Doto, monospace", "#fff", "right");
+    x.font = "400 150px Anton, Impact, sans-serif"; x.fillStyle = "#fff"; x.fillText("THE 9.0 MANUAL", 24, 178, w - 48);
     x.fillStyle = "#f6c200"; x.fillRect(40, 216, w - 80, h - 216); x.fillStyle = "#ffe36a"; x.fillRect(40, 216, w - 80, 56);
     txt(x, "¬(P ∧ Q)  ⇔  ¬P ∨ ¬Q", 64, 256, `400 30px ${MATH}`, "#111");
     const vx = 330, vy = 486, vr = 140;
@@ -349,8 +527,8 @@ function buildScreens() {
     SCR.push(c); }
   // 4 · Lorenz — live walkthroughs
   { const [c, x] = mk(w, h); x.fillStyle = "#050607"; x.fillRect(0, 0, w, h);
-    txt(x, "LIVE WALKTHROUGHS", 40, 54, "800 18px Doto, monospace", "#cfd8da");
-    txt(x, "ON DISCORD · ONE QUESTION, FROM COLD", 40, 80, "500 14px \"JetBrains Mono\", monospace", "#7f8b8f");
+    txt(x, "DOOMSDAY · SET 1", 40, 54, "800 18px Doto, monospace", "#cfd8da");
+    txt(x, "BEYOND QUESTION 20 · STILL INSIDE THE SPECIFICATION", 40, 80, "500 14px \"JetBrains Mono\", monospace", "#7f8b8f");
     let X = 1, Y = 1, Z = 1; const dt = .004;
     for (let n = 0; n < 30000; n++) { const dx = 10 * (Y - X), dy = X * (28 - Z) - Y, dz = X * Y - (8 / 3) * Z; X += dx * dt; Y += dy * dt; Z += dz * dt;
       if (n < 400) continue; const px = w / 2 + 40 + X * 13.5, py = h - 70 - Z * 9.2, warm = X > 0;
@@ -519,7 +697,7 @@ function frame() {
   set("#who", vis(17.4, 21.2)); set("#outro", vis(22.2, 99));
   $("#prog").style.width = `${(S / smax()) * 100}%`;
   const marks = [0, 2, 9, 18.6, 23]; let act = 0; marks.forEach((m, i) => { if (S >= m - .6) act = i; });
-  $$("#railnav button").forEach((b, i) => b.classList.toggle("on", i === act));
+  $$("#railnav button[data-go]").forEach((b, i) => b.classList.toggle("on", i === act));
   const cur = SLOTS.reduce((b, v, i) => Math.abs(v - S) < Math.abs(SLOTS[b] - S) ? i : b, 0);
   $$("#workList li").forEach((li, i) => li.classList.toggle("on", i === cur));
   if (R.frozen == null) requestAnimationFrame(frame);
